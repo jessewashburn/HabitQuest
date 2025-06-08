@@ -28,7 +28,7 @@ habit-quest/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/habit-quest.git
+git clone https://github.com/jessewashburn/HabitQuest.git
 cd habit-quest
 ```
 
