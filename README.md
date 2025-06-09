@@ -1,4 +1,4 @@
-# 🧙‍♂️ Habit Quest
+# Habit Quest
 
 Habit Quest is a gamified habit-tracking web application built with **React Native Web**, **Expo**, and **TypeScript**. It allows users to track their daily habits, earn points, and stay motivated through friendly competition.
 
@@ -6,26 +6,28 @@ This project is **web-first**, with the option to run it on **mobile via the Exp
 
 ---
 
-## 📁 Project Structure
+## Requirements
 
-```
-habit-quest/
-├── app/                # Pages and routes (using Expo Router)
-│   ├── index.tsx       # Landing page
-│   └── index.styles.ts # Styles for landing page
-├── assets/             # Static assets (images, fonts, etc.)
-├── node_modules/
-├── package.json
-├── tsconfig.json
-├── README.md
-└── ...
-```
+- Node.js v18 or newer
+- npm v9 or newer
+- Git (for cloning)
+- Expo Go app (optional for mobile testing)
 
 ---
 
-## 🚀 Getting Started
+## Dependencies
 
-### 1. Clone the repository
+- `expo`
+- `expo-router`
+- `react-native`
+- `react-native-web`
+- `typescript`
+
+---
+
+## Getting started 
+
+### Clone the repository
 
 ```bash
 git clone https://github.com/jessewashburn/HabitQuest.git
@@ -34,9 +36,9 @@ cd habit-quest
 
 ---
 
-## 🖥 Installation & Setup
+## Installation & Setup
 
-### 📌 Mac / Linux (Command Line)
+### Mac / Linux (Command Line)
 
 ```bash
 # Use Node 18+
@@ -51,7 +53,7 @@ npm install
 npx expo start --web
 ```
 
-### 📌 Windows (PowerShell or CMD)
+### Windows (PowerShell or CMD)
 
 1. [Install Node.js 18+](https://nodejs.org/)
 2. Open PowerShell or CMD:
@@ -63,52 +65,7 @@ npx expo start --web
 ```
 
 ---
-
-## 📱 Run on Mobile (Optional)
-
-To test on **physical iOS/Android** devices:
-
-1. Install the **Expo Go** app from the App Store or Google Play
-2. Start the Expo dev server:
-
-```bash
-npx expo start
-```
-
-3. Scan the QR code with Expo Go on your device
-
----
-
-## ⚙️ Scripts
-
-| Command                   | Description                     |
-|---------------------------|---------------------------------|
-| `npx expo start`          | Launch Expo dev tools           |
-| `npx expo start --web`    | Run the app in your browser     |
-| `npm install`             | Install dependencies            |
-
----
-
-## ✅ Requirements
-
-- Node.js v18 or newer
-- npm v9 or newer
-- Git (for cloning)
-- Expo Go app (optional for mobile testing)
-
----
-
-## 📦 Dependencies
-
-- `expo`
-- `expo-router`
-- `react-native`
-- `react-native-web`
-- `typescript`
-
----
-
-## 🧪 Testing It Works
+## Testing It Works
 
 After running:
 
@@ -128,8 +85,22 @@ You should see a landing page that says:
 > Track your habits. Level up your life.
 
 ---
+## Run on Mobile (Optional)
 
-## 👥 Group Members (CTRL+ALT+ELITE)
+To test on **physical iOS/Android** devices:
+
+1. Install the **Expo Go** app from the App Store or Google Play
+2. Start the Expo dev server:
+
+```bash
+npx expo start
+```
+
+3. Scan the QR code with Expo Go on your device
+
+---
+
+## Group Members (CTRL+ALT+ELITE)
 
 - Harrison Kunkel  
 - Mohamed Bundu  
