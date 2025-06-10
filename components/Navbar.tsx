@@ -1,6 +1,6 @@
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -40,11 +40,21 @@ export default function Navbar() {
         </>
       ) : (
         <>
-          <Link href="/" style={styles.link}><Text style={styles.linkText}>Home</Text></Link>
-          <Link href="/habits" style={styles.link}><Text style={styles.linkText}>Habits</Text></Link>
-          <Link href="/friends" style={styles.link}><Text style={styles.linkText}>Friends</Text></Link>
-          <Link href="/profile" style={styles.link}><Text style={styles.linkText}>Profile</Text></Link>
-          <Link href="/about" style={styles.link}><Text style={styles.linkText}>About</Text></Link>
+          <Pressable onPress={() => router.push('/')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
+            <Text style={styles.linkText}>Home</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/habits')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
+            <Text style={styles.linkText}>Habits</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/friends')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
+            <Text style={styles.linkText}>Friends</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/profile')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
+            <Text style={styles.linkText}>Profile</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/about')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
+            <Text style={styles.linkText}>About</Text>
+          </Pressable>
         </>
       )}
     </View>
@@ -55,7 +65,6 @@ const styles = StyleSheet.create({
   nav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 12,
     backgroundColor: '#eee',
     borderBottomWidth: 1,
     borderColor: '#ccc',
@@ -67,14 +76,16 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalBackdrop: {
-    // Covers full screen to detect outside taps
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.2)',
     justifyContent: 'flex-start',
   },
   link: {
-    paddingVertical: 8,
+    paddingVertical: 16,
     paddingHorizontal: 12,
+  },
+  linkHover: {
+    backgroundColor: '#ddd',
   },
   linkText: {
     fontSize: 16,
@@ -90,11 +101,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
     paddingVertical: 8,
     flexDirection: 'column',
     alignItems: 'flex-end',

@@ -8,7 +8,7 @@ export default function Layout() {
   return (
     <View style={{ flex: 1 }}>
       <Navbar />
-      <Slot /> {/* Renders the current screen */}
+      <Slot />
     </View>
   );
 }
