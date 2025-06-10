@@ -16,21 +16,22 @@ export default function Navbar() {
           </TouchableOpacity>
           {menuOpen && (
             <Modal transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
-              {/* Backdrop closes menu when tapped */}
               <TouchableOpacity style={styles.modalBackdrop} onPress={() => setMenuOpen(false)} activeOpacity={1}>
                 <View style={styles.mobileMenu}>
-                  {/* Touchable links that close the menu and navigate */}
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/'); }}>
                     <Text style={styles.linkText}>Home</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/habits'); }}>
                     <Text style={styles.linkText}>Habits</Text>
                   </TouchableOpacity>
+                  <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/friends'); }}>
+                    <Text style={styles.linkText}>Friends</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/profile'); }}>
+                    <Text style={styles.linkText}>Profile</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/about'); }}>
                     <Text style={styles.linkText}>About</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/settings'); }}>
-                    <Text style={styles.linkText}>Settings</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -41,8 +42,9 @@ export default function Navbar() {
         <>
           <Link href="/" style={styles.link}><Text style={styles.linkText}>Home</Text></Link>
           <Link href="/habits" style={styles.link}><Text style={styles.linkText}>Habits</Text></Link>
+          <Link href="/friends" style={styles.link}><Text style={styles.linkText}>Friends</Text></Link>
+          <Link href="/profile" style={styles.link}><Text style={styles.linkText}>Profile</Text></Link>
           <Link href="/about" style={styles.link}><Text style={styles.linkText}>About</Text></Link>
-          <Link href="/settings" style={styles.link}><Text style={styles.linkText}>Settings</Text></Link>
         </>
       )}
     </View>
