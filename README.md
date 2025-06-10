@@ -108,3 +108,16 @@ npx expo start
 - Jesse Washburn
 
 ---
+
+## Known Warnings
+
+You may see the following warning in the console when running the app on web:
+
+```
+"shadow*" style props are deprecated. Use "boxShadow".
+```
+
+This warning does not come from our code. It is triggered internally by the `expo-router` library when used with `react-native-web`. We are not using any `shadow*` props in the app.
+
+You can safely ignore it.
+
