@@ -27,11 +27,11 @@ export default function Navbar() {
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/friends'); }}>
                     <Text style={styles.linkText}>Friends</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/profile'); }}>
-                    <Text style={styles.linkText}>Profile</Text>
-                  </TouchableOpacity>
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/about'); }}>
                     <Text style={styles.linkText}>About</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/profile'); }}>
+                    <Text style={styles.linkText}>Profile</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -49,11 +49,11 @@ export default function Navbar() {
           <Pressable onPress={() => router.push('/friends')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
             <Text style={styles.linkText}>Friends</Text>
           </Pressable>
-          <Pressable onPress={() => router.push('/profile')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
-            <Text style={styles.linkText}>Profile</Text>
-          </Pressable>
           <Pressable onPress={() => router.push('/about')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
             <Text style={styles.linkText}>About</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/profile')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
+            <Text style={styles.linkText}>Profile</Text>
           </Pressable>
         </>
       )}
