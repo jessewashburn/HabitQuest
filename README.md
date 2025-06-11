@@ -31,7 +31,7 @@ This project is **web-first**, with the option to run it on **mobile via the Exp
 
 ```bash
 git clone https://github.com/jessewashburn/HabitQuest.git
-cd habit-quest
+cd HabitQuest
 ```
 
 ---
