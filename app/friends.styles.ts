@@ -128,6 +128,13 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     fontSize: 15,
   },
+  pageTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+    marginTop: 8,
+  },
 });
 
 export default styles;

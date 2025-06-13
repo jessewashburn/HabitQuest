@@ -78,6 +78,7 @@ export default function FriendsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.narrowContainer}>
+        <Text style={styles.pageTitle}>Friends</Text>
         <View style={styles.searchBarContainer}>
           <TextInput
             style={styles.searchBar}
