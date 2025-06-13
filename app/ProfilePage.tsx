@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface User {
   name: string;
@@ -29,41 +29,32 @@ export default function ProfilePage({ user, readOnly = false }: ProfilePageProps
   };
 
   return (
-    <div>
-      <nav className="navbar">
-        <a href="/">Home</a>
-        <a href="/profile" title="Profile">
-          <span className="material-icons">account_circle</span>
-        </a>
-      </nav>
+    <main>
+      <section id="profile">
+        <h1>{name}</h1>
+        <p><strong>Points:</strong> {points}</p>
+        <p><strong>Level:</strong> {level}</p>
 
-      <main>
-        <section id="profile">
-          <h1>{name}</h1>
-          <p><strong>Points:</strong> {points}</p>
-          <p><strong>Level:</strong> {level}</p>
+        <div>
+          <label htmlFor="pref-theme">Theme:</label>
+          <select
+            id="pref-theme"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            disabled={readOnly}
+          >
+            <option>Light</option>
+            <option>Dark</option>
+          </select>
+        </div>
 
-          <div>
-            <label htmlFor="pref-theme">Theme:</label>
-            <select
-              id="pref-theme"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              disabled={readOnly}
-            >
-              <option>Light</option>
-              <option>Dark</option>
-            </select>
-          </div>
-
-          {!readOnly && (
-            <>
-              <button onClick={handleSave}>Save Preferences</button>
-              <button onClick={handleLogout}>Log Out</button>
-            </>
-          )}
-        </section>
-      </main>
-    </div>
+        {!readOnly && (
+          <>
+            <button onClick={handleSave}>Save Preferences</button>
+            <button onClick={handleLogout}>Log Out</button>
+          </>
+        )}
+      </section>
+    </main>
   );
 }
