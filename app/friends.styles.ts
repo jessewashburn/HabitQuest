@@ -3,8 +3,6 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
     backgroundColor: '#fff',
     paddingTop: 40,
   },
@@ -12,15 +10,10 @@ const styles = StyleSheet.create({
     width: '80%',
     alignSelf: 'center',
   },
-  text: {
-    fontSize: 18,
-  },
   searchBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
     marginTop: 16,
-    marginBottom: 0,
   },
   searchBar: {
     flex: 1,
@@ -35,7 +28,6 @@ const styles = StyleSheet.create({
   clearButton: {
     marginLeft: -36,
     padding: 8,
-    zIndex: 1,
   },
   clearButtonText: {
     fontSize: 20,
@@ -101,7 +93,6 @@ const styles = StyleSheet.create({
     padding: 24,
     minWidth: 260,
     alignItems: 'center',
-    elevation: 4,
   },
   modalText: {
     fontSize: 16,
@@ -112,7 +103,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',
-    gap: 16,
   },
   snackbar: {
     position: 'absolute',
@@ -126,7 +116,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    elevation: 6,
   },
   snackbarText: {
     color: '#fff',
