@@ -1,6 +1,12 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "customConditions": ["react-native"],
+    "jsx": "react-jsx",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "paths": {
       "@/*": [
