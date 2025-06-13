@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-habitquest-dev-dfa06-authRole",
+      "UnauthRoleArn": "arn:aws:iam::319197018531:role/amplify-habitquest-dev-dfa06-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::319197018531:role/amplify-habitquest-dev-dfa06-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-habitquest-dev-dfa06-deployment",
+      "UnauthRoleName": "amplify-habitquest-dev-dfa06-unauthRole",
+      "StackName": "amplify-habitquest-dev-dfa06",
+      "StackId": "arn:aws:cloudformation:us-east-1:319197018531:stack/amplify-habitquest-dev-dfa06/fce9df70-47df-11f0-a06c-0e75129d1c7d",
+      "AmplifyAppId": "d1ie60lnk9s5tj"
+    },
+    "categories": {
+      "hosting": {
+        "S3AndCloudFront": {}
+      }
+    }
+  }
+}

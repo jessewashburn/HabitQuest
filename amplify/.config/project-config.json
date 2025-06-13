@@ -1,0 +1,18 @@
+{
+  "whyContinueWithGen1": "Prefer not to answer",
+  "projectName": "HabitQuest",
+  "version": "3.1",
+  "frontend": "javascript",
+  "javascript": {
+    "framework": "react-native",
+    "config": {
+      "SourceDir": "./",
+      "DistributionDir": "dist",
+      "BuildCommand": "npx expo export --output-dir dist",
+      "StartCommand": "npx expo start --web"
+    }
+  },
+  "providers": [
+    "awscloudformation"
+  ]
+}
