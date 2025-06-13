@@ -21,13 +21,11 @@ export default function ProfilePage({ user, readOnly = false }: ProfilePageProps
   const handleSave = () => {
     if (readOnly) return;
     alert(`Preferences saved: Theme = ${theme}`);
-    // TODO: Save preferences to backend or local storage
   };
 
   const handleLogout = () => {
     if (readOnly) return;
     alert("Logging out...");
-    // TODO: Implement logout logic here
   };
 
   return (
