@@ -1,11 +1,62 @@
-import React from 'react';
-import { Text, View } from 'react-native';
-import styles from './profile.styles';
+import { useState } from 'react';
+import { Alert, Button, Image, Text, View } from 'react-native';
+import styles from './profile.styles.ts';
 
-export default function ProfileScreen() {
+interface User {
+  name: string;
+  points: number;
+  level: number;
+  profileImage?: string;
+}
+
+interface ProfileScreenProps {
+  user?: User;
+  readOnly?: boolean;
+}
+
+export default function ProfileScreen({ user, readOnly = false }: ProfileScreenProps) {
+  const [theme, setTheme] = useState("Light");
+
+  const userData = user ?? {
+    name: "User Profile",
+    points: 0,
+    level: 1,
+    profileImage: "https://static.vecteezy.com/system/resources/previews/000/574/512/original/vector-sign-of-user-icon.jpg",
+  };
+
+  const handleSave = () => {
+    if (readOnly) return;
+    Alert.alert("Preferences saved", `Theme = ${theme}`);
+  };
+
+  const handleLogout = () => {
+    if (readOnly) return;
+    Alert.alert("Logging out...");
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Profile Page</Text>
+      <Text style={styles.text}>{userData.name}</Text>
+      <Text style={styles.text}>Points: {userData.points}</Text>
+      <Text style={styles.text}>Level: {userData.level}</Text>
+      <Image
+  source={{ uri: userData.profileImage }}
+  style={styles.profileImage}
+/>
+
+      <Text style={styles.text}>Theme: {theme}</Text>
+      <Button
+        title={`Switch to ${theme === 'Light' ? 'Dark' : 'Light'} Theme`}
+        onPress={() => setTheme(theme === 'Light' ? 'Dark' : 'Light')}
+        disabled={readOnly}
+      />
+
+      {!readOnly && (
+        <>
+          <Button title="Save Preferences" onPress={handleSave} />
+          <Button title="Log Out" onPress={handleLogout} />
+        </>
+      )}
     </View>
   );
 }
