@@ -1,11 +1,102 @@
-import React from 'react';
-import { Text, View } from 'react-native';
-import styles from './habits.styles';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Switch, StyleSheet } from 'react-native';
 
-export default function HabitsScreen() {
+type Habit = {
+  id: string;
+  name: string;
+  category: 'Health' | 'Productivity' | 'Spiritual';
+  note?: string;
+  isCompleted: boolean;
+  streak: number;
+  points: number;
+};
+
+const initialHabits: Habit[] = [
+  { id: '1', name: 'Drink 8 glasses of water', category: 'Health', note: 'Stay hydrated!', isCompleted: false, streak: 5, points: 10 },
+  { id: '2', name: 'Study 2 hours', category: 'Productivity', isCompleted: true, streak: 3, points: 20 },
+  { id: '3', name: 'Morning meditation', category: 'Spiritual', isCompleted: false, streak: 10, points: 15 },
+  { id: '4', name: 'Exercise 30 minutes', category: 'Health', isCompleted: false, streak: 2, points: 12 },
+  { id: '5', name: 'Plan daily goals', category: 'Productivity', isCompleted: true, streak: 6, points: 9 },
+  { id: '6', name: 'Read 10 pages', category: 'Productivity', isCompleted: false, streak: 4, points: 11 },
+  { id: '7', name: 'Practice gratitude', category: 'Spiritual', isCompleted: true, streak: 7, points: 13 },
+  { id: '8', name: 'Stretch in the morning', category: 'Health', isCompleted: false, streak: 1, points: 6 },
+  { id: '9', name: 'Journal before bed', category: 'Spiritual', isCompleted: false, streak: 5, points: 14 },
+  { id: '10', name: 'No social media after 9pm', category: 'Productivity', isCompleted: false, streak: 2, points: 8 },
+  { id: '11', name: 'Call a friend', category: 'Spiritual', isCompleted: false, streak: 1, points: 7 },
+  { id: '12', name: 'Cook a healthy meal', category: 'Health', isCompleted: true, streak: 3, points: 10 },
+  { id: '13', name: 'Review class notes', category: 'Productivity', isCompleted: true, streak: 6, points: 16 },
+  { id: '14', name: 'Affirmations', category: 'Spiritual', isCompleted: false, streak: 5, points: 9 },
+  { id: '15', name: 'Sleep 8 hours', category: 'Health', isCompleted: false, streak: 2, points: 10 },
+  { id: '16', name: 'Inbox Zero', category: 'Productivity', isCompleted: true, streak: 4, points: 7 },
+  { id: '17', name: 'Donate or help someone', category: 'Spiritual', isCompleted: false, streak: 1, points: 12 },
+  { id: '18', name: 'Meal prep for tomorrow', category: 'Health', isCompleted: true, streak: 2, points: 11 },
+  { id: '19', name: 'Watch a TED Talk', category: 'Productivity', isCompleted: false, streak: 3, points: 9 },
+  { id: '20', name: 'Reflect on goals', category: 'Spiritual', isCompleted: false, streak: 2, points: 8 },
+];
+
+
+export default function HabitsPage() {
+  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+
+  const toggleHabit = (id: string) => {
+    const updated = habits.map(habit =>
+      habit.id === id ? { ...habit, isCompleted: !habit.isCompleted } : habit
+    );
+    setHabits(updated);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Habits Page</Text>
-    </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Your Daily Habits</Text>
+      {habits.map(habit => (
+        <View key={habit.id} style={styles.card}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.habitName}>{habit.name}</Text>
+            <Text style={styles.category}>{habit.category}</Text>
+            {habit.note && <Text style={styles.note}>{habit.note}</Text>}
+            <Text style={styles.meta}>🔥 Streak: {habit.streak} days</Text>
+            <Text style={styles.meta}>🏆 Points: {habit.points}</Text>
+          </View>
+          <Switch
+            value={habit.isCompleted}
+            onValueChange={() => toggleHabit(habit.id)}
+          />
+        </View>
+      ))}
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  card: {
+    flexDirection: 'row',
+    padding: 15,
+    borderRadius: 12,
+    backgroundColor: '#f2f2f2',
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  habitName: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  category: {
+    fontStyle: 'italic',
+    color: '#555',
+  },
+  note: {
+    color: '#333',
+  },
+  meta: {
+    fontSize: 12,
+    color: '#888',
+  },
+});
