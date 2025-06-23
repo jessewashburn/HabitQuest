@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, Switch, Text, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import styles from './habits.styles';
 
 type Habit = {
@@ -49,18 +49,20 @@ export default function HabitsPage() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Your Daily Habits</Text>
       {habits.map(habit => (
-        <View key={habit.id} style={styles.card}>
+        <View key={habit.id} style={[styles.card, habit.isCompleted && styles.completedCard]}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.habitName}>{habit.name}</Text>
+            <Text style={[styles.habitName, habit.isCompleted && styles.completedText]}>{habit.name}</Text>
             <Text style={styles.category}>{habit.category}</Text>
             {habit.note && <Text style={styles.note}>{habit.note}</Text>}
             <Text style={styles.meta}>🔥 Streak: {habit.streak} days</Text>
             <Text style={styles.meta}>🏆 Points: {habit.points}</Text>
           </View>
-          <Switch
-            value={habit.isCompleted}
-            onValueChange={() => toggleHabit(habit.id)}
-          />
+          <TouchableOpacity
+            style={[styles.checkbox, habit.isCompleted && styles.checkedBox]}
+            onPress={() => toggleHabit(habit.id)}
+          >
+            {habit.isCompleted && <Text style={styles.checkmark}>✓</Text>}
+          </TouchableOpacity>
         </View>
       ))}
     </ScrollView>
