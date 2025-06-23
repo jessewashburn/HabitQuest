@@ -8,6 +8,15 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: '#f0f0f0',
   },
+  text: {
+    fontSize: 18,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
+  },
   logo: {
     width: 100,
     height: 100,
