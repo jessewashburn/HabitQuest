@@ -16,14 +16,14 @@ export default function Home() {
       <Text style={styles.subtitle}>Level Up Your Life – One Habit at a Time</Text>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>✅ Completed Today</Text>
+        <Text style={styles.sectionTitle}> Completed Today</Text>
         {completedHabits.map((habit, index) => (
           <Text key={index} style={styles.habitItem}>{habit}</Text>
         ))}
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>⏳ Due Today</Text>
+        <Text style={styles.sectionTitle}> Due Today</Text>
         {dueHabits.map((habit, index) => (
           <Text key={index} style={styles.habitItem}>{habit}</Text>
         ))}
