@@ -3,8 +3,10 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     paddingTop: 40,
+  },
+  gradientBackground: {
+    flex: 1,
   },
   narrowContainer: {
     width: '80%',

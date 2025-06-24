@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Alert, Button, Image, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import styles from './profile.styles.ts';
 
 interface User {
@@ -35,14 +36,14 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={["#f8f4e3", "#add8e6"]} style={styles.container}>
       <Text style={styles.text}>{userData.name}</Text>
       <Text style={styles.text}>Points: {userData.points}</Text>
       <Text style={styles.text}>Level: {userData.level}</Text>
       <Image
-  source={{ uri: userData.profileImage }}
-  style={styles.profileImage}
-/>
+        source={{ uri: userData.profileImage }}
+        style={styles.profileImage}
+      />
 
       <Text style={styles.text}>Theme: {theme}</Text>
       <Button
@@ -57,6 +58,6 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
           <Button title="Log Out" onPress={handleLogout} />
         </>
       )}
-    </View>
+    </LinearGradient>
   );
 }

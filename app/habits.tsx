@@ -1,70 +1,261 @@
 import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import styles from './habits.styles';
+import { View, Text, ScrollView, Switch, StyleSheet } from 'react-native';
 
 type Habit = {
   id: string;
-  name: string;
-  category: 'Health' | 'Productivity' | 'Spiritual';
-  note?: string;
-  isCompleted: boolean;
+  title: string;
+  category: string;
+  description: string;
   streak: number;
   points: number;
+  isEnabled: boolean;
 };
 
 const initialHabits: Habit[] = [
-  { id: '1', name: 'Drink 8 glasses of water', category: 'Health', note: 'Stay hydrated!', isCompleted: false, streak: 5, points: 10 },
-  { id: '2', name: 'Study 2 hours', category: 'Productivity', isCompleted: true, streak: 3, points: 20 },
-  { id: '3', name: 'Morning meditation', category: 'Spiritual', isCompleted: false, streak: 10, points: 15 },
-  { id: '4', name: 'Exercise 30 minutes', category: 'Health', isCompleted: false, streak: 2, points: 12 },
-  { id: '5', name: 'Plan daily goals', category: 'Productivity', isCompleted: true, streak: 6, points: 9 },
-  { id: '6', name: 'Read 10 pages', category: 'Productivity', isCompleted: false, streak: 4, points: 11 },
-  { id: '7', name: 'Practice gratitude', category: 'Spiritual', isCompleted: true, streak: 7, points: 13 },
-  { id: '8', name: 'Stretch in the morning', category: 'Health', isCompleted: false, streak: 1, points: 6 },
-  { id: '9', name: 'Journal before bed', category: 'Spiritual', isCompleted: false, streak: 5, points: 14 },
-  { id: '10', name: 'No social media after 9pm', category: 'Productivity', isCompleted: false, streak: 2, points: 8 },
-  { id: '11', name: 'Call a friend', category: 'Spiritual', isCompleted: false, streak: 1, points: 7 },
-  { id: '12', name: 'Cook a healthy meal', category: 'Health', isCompleted: true, streak: 3, points: 10 },
-  { id: '13', name: 'Review class notes', category: 'Productivity', isCompleted: true, streak: 6, points: 16 },
-  { id: '14', name: 'Affirmations', category: 'Spiritual', isCompleted: false, streak: 5, points: 9 },
-  { id: '15', name: 'Sleep 8 hours', category: 'Health', isCompleted: false, streak: 2, points: 10 },
-  { id: '16', name: 'Inbox Zero', category: 'Productivity', isCompleted: true, streak: 4, points: 7 },
-  { id: '17', name: 'Donate or help someone', category: 'Spiritual', isCompleted: false, streak: 1, points: 12 },
-  { id: '18', name: 'Meal prep for tomorrow', category: 'Health', isCompleted: true, streak: 2, points: 11 },
-  { id: '19', name: 'Watch a TED Talk', category: 'Productivity', isCompleted: false, streak: 3, points: 9 },
-  { id: '20', name: 'Reflect on goals', category: 'Spiritual', isCompleted: false, streak: 2, points: 8 },
+  {
+    id: '1',
+    title: 'Drink 8 glasses of water',
+    category: 'Health',
+    description: 'Stay hydrated!',
+    streak: 5,
+    points: 10,
+    isEnabled: false,
+  },
+  {
+    id: '2',
+    title: 'Study 2 hours',
+    category: 'Productivity',
+    description: 'Focus and learn',
+    streak: 3,
+    points: 20,
+    isEnabled: true,
+  },
+  {
+    id: '3',
+    title: 'Morning meditation',
+    category: 'Spiritual',
+    description: 'Clear your mind',
+    streak: 10,
+    points: 15,
+    isEnabled: false,
+  },
+  {
+    id: '4',
+    title: 'Exercise 30 minutes',
+    category: 'Health',
+    description: 'Get moving!',
+    streak: 2,
+    points: 12,
+    isEnabled: false,
+  },
+  {
+    id: '5',
+    title: 'Plan daily goals',
+    category: 'Productivity',
+    description: 'Start with clarity',
+    streak: 6,
+    points: 9,
+    isEnabled: true,
+  },
+  {
+    id: '6',
+    title: 'Read 10 pages',
+    category: 'Growth',
+    description: 'Learn something new',
+    streak: 4,
+    points: 11,
+    isEnabled: false,
+  },
+  {
+    id: '7',
+    title: 'Stretch for 10 minutes',
+    category: 'Health',
+    description: 'Loosen up your body',
+    streak: 1,
+    points: 7,
+    isEnabled: false,
+  },
+  {
+    id: '8',
+    title: 'No phone for 1 hour',
+    category: 'Focus',
+    description: 'Digital detox',
+    streak: 2,
+    points: 13,
+    isEnabled: true,
+  },
+  {
+    id: '9',
+    title: 'Sleep 8 hours',
+    category: 'Health',
+    description: 'Rest fully',
+    streak: 3,
+    points: 18,
+    isEnabled: false,
+  },
+  {
+    id: '10',
+    title: 'Call a loved one',
+    category: 'Social',
+    description: 'Stay connected',
+    streak: 1,
+    points: 5,
+    isEnabled: false,
+  },
+  {
+    id: '11',
+    title: 'Journal your thoughts',
+    category: 'Mental Health',
+    description: 'Reflect on your day',
+    streak: 2,
+    points: 10,
+    isEnabled: false,
+  },
+  {
+    id: '12',
+    title: 'Practice gratitude',
+    category: 'Spiritual',
+    description: 'Write 3 things you’re thankful for',
+    streak: 6,
+    points: 8,
+    isEnabled: false,
+  },
+  {
+    id: '13',
+    title: 'Review finances',
+    category: 'Finance',
+    description: 'Check your spending',
+    streak: 3,
+    points: 14,
+    isEnabled: false,
+  },
+  {
+    id: '14',
+    title: 'Declutter 1 item',
+    category: 'Minimalism',
+    description: 'Keep things simple',
+    streak: 2,
+    points: 7,
+    isEnabled: true,
+  },
+  {
+    id: '15',
+    title: 'Cook a meal at home',
+    category: 'Health',
+    description: 'Eat clean',
+    streak: 4,
+    points: 12,
+    isEnabled: false,
+  },
+  {
+    id: '16',
+    title: 'Limit sugar intake',
+    category: 'Health',
+    description: 'Make better choices',
+    streak: 3,
+    points: 9,
+    isEnabled: false,
+  },
+  {
+    id: '17',
+    title: 'Clean up workspace',
+    category: 'Productivity',
+    description: 'Tidy environment = clear mind',
+    streak: 1,
+    points: 6,
+    isEnabled: false,
+  },
+  {
+    id: '18',
+    title: 'Help someone',
+    category: 'Kindness',
+    description: 'Spread good energy',
+    streak: 2,
+    points: 11,
+    isEnabled: false,
+  },
+  {
+    id: '19',
+    title: 'Listen to an educational podcast',
+    category: 'Growth',
+    description: 'Fuel your brain',
+    streak: 3,
+    points: 10,
+    isEnabled: false,
+  },
+  {
+    id: '20',
+    title: 'Do one creative thing',
+    category: 'Creativity',
+    description: 'Express yourself',
+    streak: 2,
+    points: 10,
+    isEnabled: false,
+  },
 ];
 
-export default function HabitsPage() {
-  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+export default function Habits() {
+  const [habits, setHabits] = useState(initialHabits);
 
   const toggleHabit = (id: string) => {
-    const updated = habits.map(habit =>
-      habit.id === id ? { ...habit, isCompleted: !habit.isCompleted } : habit
+    const updated = habits.map((habit) =>
+      habit.id === id ? { ...habit, isEnabled: !habit.isEnabled } : habit
     );
     setHabits(updated);
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Your Daily Habits</Text>
       {habits.map(habit => (
-        <View key={habit.id} style={[styles.card, habit.isCompleted && styles.completedCard]}>
+        <View key={habit.id} style={styles.card}>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.habitName, habit.isCompleted && styles.completedText]}>{habit.name}</Text>
+            <Text style={styles.habitName}>{habit.name}</Text>
             <Text style={styles.category}>{habit.category}</Text>
             {habit.note && <Text style={styles.note}>{habit.note}</Text>}
             <Text style={styles.meta}>🔥 Streak: {habit.streak} days</Text>
             <Text style={styles.meta}>🏆 Points: {habit.points}</Text>
           </View>
-          <TouchableOpacity
-            style={[styles.checkbox, habit.isCompleted && styles.checkedBox]}
-            onPress={() => toggleHabit(habit.id)}
-          >
-            {habit.isCompleted && <Text style={styles.checkmark}>✓</Text>}
-          </TouchableOpacity>
+          <Switch
+            value={habit.isCompleted}
+            onValueChange={() => toggleHabit(habit.id)}
+          />
         </View>
       ))}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  card: {
+    flexDirection: 'row',
+    padding: 15,
+    borderRadius: 12,
+    backgroundColor: '#f2f2f2',
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  habitName: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  category: {
+    fontStyle: 'italic',
+    color: '#555',
+  },
+  note: {
+    color: '#333',
+  },
+  meta: {
+    fontSize: 12,
+    color: '#888',
+  },
+});
