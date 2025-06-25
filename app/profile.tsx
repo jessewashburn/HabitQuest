@@ -20,7 +20,7 @@ interface ProfileScreenProps {
 export default function ProfileScreen({ user, readOnly = false }: ProfileScreenProps) {
   const [theme, setTheme] = useState("Light");
   const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
-  const [userName, setUserName] = useState("Enter a username");
+  const [userName, setUserName] = useState("Enter a display name");
   const [isEditingName, setIsEditingName] = useState(false);
 
   const userData = user ?? {
@@ -78,6 +78,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
                 onChangeText={setUserName}
                 onBlur={() => setIsEditingName(false)}
                 onSubmitEditing={() => setIsEditingName(false)}
+                selectTextOnFocus={true}
                 autoFocus
                 placeholder="Enter your name"
               />
