@@ -1,13 +1,27 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   container: {
-    padding: 20,
+    flex: 1,
+    paddingTop: 40,
+  },
+  narrowContainer: {
+    width: '80%',
+    alignSelf: 'center',
+  },
+  scrollContent: {
+    marginTop: 16,
   },
   title: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
+    textAlign: 'center',
+    marginBottom: 16,
+    marginTop: 8,
+    color: '#2D4E85',
   },
   card: {
     flexDirection: 'row',

@@ -1,12 +1,14 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#f0f0f0',
   },
   text: {
     fontSize: 18,
@@ -28,23 +30,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
     textAlign: 'center',
-    color: '#333',
+    color: '#2D4E85',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#2D4E85',
     marginBottom: 24,
     textAlign: 'center',
   },
-  section: {
+  sectionsContainer: {
     width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  section: {
+    minWidth: 280,
+    flex: 1,
     marginBottom: 20,
     paddingHorizontal: 12,
+    maxWidth: '48%',
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#5e60ce',
+    color: '#2D4E85',
     marginBottom: 8,
   },
   habitItem: {

@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import styles from './habits.styles';
@@ -46,25 +47,36 @@ export default function HabitsPage() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Your Daily Habits</Text>
-      {habits.map(habit => (
-        <View key={habit.id} style={[styles.card, habit.isCompleted && styles.completedCard]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.habitName, habit.isCompleted && styles.completedText]}>{habit.name}</Text>
-            <Text style={styles.category}>{habit.category}</Text>
-            {habit.note && <Text style={styles.note}>{habit.note}</Text>}
-            <Text style={styles.meta}>🔥 Streak: {habit.streak} days</Text>
-            <Text style={styles.meta}>🏆 Points: {habit.points}</Text>
-          </View>
-          <TouchableOpacity
-            style={[styles.checkbox, habit.isCompleted && styles.checkedBox]}
-            onPress={() => toggleHabit(habit.id)}
-          >
-            {habit.isCompleted && <Text style={styles.checkmark}>✓</Text>}
-          </TouchableOpacity>
+    <LinearGradient
+      colors={['#F5EDD8', '#6BA8D6']}
+      start={{ x: 0, y: 1 }}
+      end={{ x: 0, y: 0 }}
+      style={styles.gradientBackground}
+    >
+      <View style={styles.container}>
+        <View style={styles.narrowContainer}>
+          <Text style={styles.title}>Your Daily Habits</Text>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            {habits.map(habit => (
+              <View key={habit.id} style={[styles.card, habit.isCompleted && styles.completedCard]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.habitName, habit.isCompleted && styles.completedText]}>{habit.name}</Text>
+                  <Text style={styles.category}>{habit.category}</Text>
+                  {habit.note && <Text style={styles.note}>{habit.note}</Text>}
+                  <Text style={styles.meta}>🔥 Streak: {habit.streak} days</Text>
+                  <Text style={styles.meta}>🏆 Points: {habit.points}</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.checkbox, habit.isCompleted && styles.checkedBox]}
+                  onPress={() => toggleHabit(habit.id)}
+                >
+                  {habit.isCompleted && <Text style={styles.checkmark}>✓</Text>}
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
         </View>
-      ))}
-    </ScrollView>
+      </View>
+    </LinearGradient>
   );
 }

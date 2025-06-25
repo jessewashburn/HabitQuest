@@ -1,6 +1,7 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Alert, Button, Image, Text, View } from 'react-native';
-import styles from './profile.styles.ts';
+import styles from './profile.styles';
 
 interface User {
   name: string;
@@ -35,28 +36,36 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{userData.name}</Text>
-      <Text style={styles.text}>Points: {userData.points}</Text>
-      <Text style={styles.text}>Level: {userData.level}</Text>
-      <Image
+    <LinearGradient
+      colors={['#F0E8D0', '#7BB8CC']}
+      start={{ x: 0, y: 1 }}
+      end={{ x: 1, y: 0 }}
+      style={styles.gradientBackground}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>Profile</Text>
+        <Text style={styles.text}>{userData.name}</Text>
+        <Text style={styles.text}>Points: {userData.points}</Text>
+        <Text style={styles.text}>Level: {userData.level}</Text>
+        <Image
   source={{ uri: userData.profileImage }}
   style={styles.profileImage}
 />
 
-      <Text style={styles.text}>Theme: {theme}</Text>
-      <Button
-        title={`Switch to ${theme === 'Light' ? 'Dark' : 'Light'} Theme`}
-        onPress={() => setTheme(theme === 'Light' ? 'Dark' : 'Light')}
-        disabled={readOnly}
-      />
+        <Text style={styles.text}>Theme: {theme}</Text>
+        <Button
+          title={`Switch to ${theme === 'Light' ? 'Dark' : 'Light'} Theme`}
+          onPress={() => setTheme(theme === 'Light' ? 'Dark' : 'Light')}
+          disabled={readOnly}
+        />
 
-      {!readOnly && (
-        <>
-          <Button title="Save Preferences" onPress={handleSave} />
-          <Button title="Log Out" onPress={handleLogout} />
-        </>
-      )}
-    </View>
+        {!readOnly && (
+          <>
+            <Button title="Save Preferences" onPress={handleSave} />
+            <Button title="Log Out" onPress={handleLogout} />
+          </>
+        )}
+      </View>
+    </LinearGradient>
   );
 }

@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { FlatList, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from './friends.styles';
@@ -76,93 +77,100 @@ export default function FriendsScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.narrowContainer}>
-        <Text style={styles.pageTitle}>Friends</Text>
-        <View style={styles.searchBarContainer}>
-          <TextInput
-            style={styles.searchBar}
-            placeholder="Find friends"
-            value={search}
-            onChangeText={setSearch}
-          />
-          {search.length > 0 && (
-            <TouchableOpacity
-              style={styles.clearButton}
-              onPress={() => setSearch('')}
-              accessibilityLabel="Clear search"
-            >
-              <Text style={styles.clearButtonText}>×</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        <FlatList
-          data={filteredUsers}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContainer}
-        />
-      </View>
-      <Modal
-        visible={!!confirmUnfriend}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setConfirmUnfriend(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>
-              Are you sure you want to unfriend {confirmUnfriend?.name}?
-            </Text>
-            <View style={styles.modalButtons}>
+    <LinearGradient
+      colors={['#F5EDD8', '#6BA8D6']}
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.gradientBackground}
+    >
+      <View style={styles.container}>
+        <View style={styles.narrowContainer}>
+          <Text style={styles.pageTitle}>Friends</Text>
+          <View style={styles.searchBarContainer}>
+            <TextInput
+              style={styles.searchBar}
+              placeholder="Find friends"
+              value={search}
+              onChangeText={setSearch}
+            />
+            {search.length > 0 && (
               <TouchableOpacity
-                style={[styles.button, styles.buttonRemove, { marginRight: 16 }]}
-                onPress={() => handleRemove(confirmUnfriend!.id)}
+                style={styles.clearButton}
+                onPress={() => setSearch('')}
+                accessibilityLabel="Clear search"
               >
-                <Text style={styles.buttonText}>Confirm Unfriend</Text>
+                <Text style={styles.clearButtonText}>×</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.buttonNeutral]}
-                onPress={() => setConfirmUnfriend(null)}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-      <Modal
-        visible={!!profilePopup}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setProfilePopup(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {profilePopup && (
-              <>
-                <Text style={styles.modalText}>
-                  You clicked {profilePopup}. This will take you to their profile
-                </Text>
-                <TouchableOpacity
-                  style={[styles.button, styles.buttonNeutral]}
-                  onPress={() => setProfilePopup(null)}
-                >
-                  <Text style={styles.buttonText}>OK</Text>
-                </TouchableOpacity>
-              </>
             )}
           </View>
+          <FlatList
+            data={filteredUsers}
+            keyExtractor={item => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContainer}
+          />
         </View>
-      </Modal>
-      {snackbar && (
-        <View style={styles.snackbar}>
-          <Text style={styles.snackbarText}>{snackbar}</Text>
-          <TouchableOpacity onPress={() => setSnackbar(null)}>
-            <Text style={styles.snackbarAction}>OK</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+        <Modal
+          visible={!!confirmUnfriend}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setConfirmUnfriend(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalText}>
+                Are you sure you want to unfriend {confirmUnfriend?.name}?
+              </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.buttonRemove, { marginRight: 16 }]}
+                  onPress={() => handleRemove(confirmUnfriend!.id)}
+                >
+                  <Text style={styles.buttonText}>Confirm Unfriend</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.buttonNeutral]}
+                  onPress={() => setConfirmUnfriend(null)}
+                >
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          visible={!!profilePopup}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setProfilePopup(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              {profilePopup && (
+                <>
+                  <Text style={styles.modalText}>
+                    You clicked {profilePopup}. This will take you to their profile
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.button, styles.buttonNeutral]}
+                    onPress={() => setProfilePopup(null)}
+                  >
+                    <Text style={styles.buttonText}>OK</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </View>
+        </Modal>
+        {snackbar && (
+          <View style={styles.snackbar}>
+            <Text style={styles.snackbarText}>{snackbar}</Text>
+            <TouchableOpacity onPress={() => setSnackbar(null)}>
+              <Text style={styles.snackbarAction}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </LinearGradient>
   );
 }

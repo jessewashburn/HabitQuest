@@ -1,9 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     paddingTop: 40,
   },
   narrowContainer: {
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   friendNameLink: {
-    color: '#1976D2',
+    color: '#2D4E85',
     textDecorationLine: 'underline',
   },
   button: {
@@ -134,6 +136,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     marginTop: 8,
+    color: '#2D4E85',
   },
 });
 
