@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
 import { Auth } from 'aws-amplify';
+import { useState } from 'react';
+import { Alert, Button, GestureResponderEvent, Text, TextInput, View } from 'react-native';
 import styles from './index.styles.ts';
 
 export default function Login({ navigation }: any) {
@@ -19,6 +19,10 @@ export default function Login({ navigation }: any) {
   const handleNavigateToCreateNewAccount = () => {
     navigation.navigate('Create New Account'); 
   };
+
+  function handleNavigateToSignUp(event: GestureResponderEvent): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <View style={styles.container}>
