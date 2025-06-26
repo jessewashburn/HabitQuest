@@ -20,10 +20,6 @@ export default function Login({ navigation }: any) {
     navigation.navigate('Create New Account'); 
   };
 
-  function handleNavigateToSignUp(event: GestureResponderEvent): void {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Habit Quest</Text>
@@ -51,7 +47,7 @@ export default function Login({ navigation }: any) {
       <Text style={styles.orText}>or</Text>
 
       <View style={styles.buttonContainer}>
-        <Button title="Create New Account" onPress={handleNavigateToSignUp} />
+        <Button title="Create New Account" onPress={handleNavigateToCreateNewAccount} />
       </View>
     </View>
   );
