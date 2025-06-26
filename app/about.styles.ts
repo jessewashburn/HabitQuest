@@ -11,7 +11,6 @@ const styles = StyleSheet.create({
   narrowContainer: {
     width: '80%',
     alignSelf: 'center',
-    marginTop: 16,
   },
   pageTitle: {
     fontSize: 32,
