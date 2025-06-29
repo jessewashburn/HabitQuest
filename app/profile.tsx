@@ -1,8 +1,10 @@
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { MdOutlineEdit } from 'react-icons/md';
 import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './profile.styles';
 
 interface User {
@@ -22,9 +24,10 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
   const [userName, setUserName] = useState("Enter a display name");
   const [isEditingName, setIsEditingName] = useState(false);
+  const { user: authUser, logout } = useAuth();
 
   const userData = user ?? {
-    name: userName,
+    name: authUser?.username || userName,
     points: 0,
     level: 1,
     profileImage: "https://static.vecteezy.com/system/resources/previews/000/574/512/original/vector-sign-of-user-icon.jpg",
@@ -37,7 +40,8 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
 
   const handleLogout = () => {
     if (readOnly) return;
-    Alert.alert("Logging out...");
+    logout();
+    router.replace('/login');
   };
 
   const pickImage = async () => {
