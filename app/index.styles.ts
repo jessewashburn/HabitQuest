@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+  //Home styles
   gradientBackground: {
     flex: 1,
   },
@@ -65,6 +66,67 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 6,
     color: '#333',
+  },
+  // Login/Register form styles
+  formContainer: {
+    width: '100%',
+    maxWidth: 400,
+    padding: 20,
+  },
+  input: {
+    width: '100%',
+    padding: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#B8D4F0',
+    backgroundColor: '#fff',
+    fontSize: 16,
+    color: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  button: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  primaryButton: {
+    backgroundColor: '#2D4E85',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#2D4E85',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButtonText: {
+    color: '#2D4E85',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  orText: {
+    marginVertical: 12,
+    color: '#666',
+    textAlign: 'center',
+    fontSize: 14,
   },
 });
 
