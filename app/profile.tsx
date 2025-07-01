@@ -1,9 +1,13 @@
 import { Auth } from 'aws-amplify';
+import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Image, Text, TextInput, View } from 'react-native';
+import { Alert, Button, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { MdOutlineEdit } from 'react-icons/md'; 
+
 import styles from './profile.styles.ts';
 import { API_BASE_URL } from './config.ts';
-import { useTheme } from '@react-navigation/native';
+import { useTheme } from '@/hooks/ThemeContext.tsx'; 
 
 interface User {
   name: string;
@@ -20,18 +24,21 @@ interface ProfileScreenProps {
 export default function ProfileScreen({ user, readOnly = false }: ProfileScreenProps) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const { theme, setTheme } = useTheme();
-  const [saving, setSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-
   const [userData, setUserData] = useState<User>(user ?? {
-    name: "User Profile",
+    name: 'User Profile',
     points: 0,
     level: 1,
-    profileImage: "https://static.vecteezy.com/system/resources/previews/000/574/512/original/vector-sign-of-user-icon.jpg",
+    profileImage: 'https://static.vecteezy.com/system/resources/previews/000/574/512/original/vector-sign-of-user-icon.jpg',
   });
+
+  const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -43,10 +50,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         setUserData({
@@ -69,6 +73,21 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
 
     fetchProfile();
   }, []);
+
+  const pickImage = async () => {
+    if (readOnly) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImageUri(result.assets[0].uri);
+    }
+  };
 
   const handleSave = async () => {
     if (readOnly) return;
@@ -115,10 +134,10 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
     if (readOnly) return;
     try {
       await Auth.signOut();
-      Alert.alert("Logged out successfully");
+      Alert.alert('Logged out successfully');
     } catch (error) {
-      Alert.alert("Error logging out");
       console.error(error);
+      Alert.alert('Error logging out');
     }
   };
 
@@ -139,50 +158,75 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{userData.name}</Text>
-      <Text style={styles.text}>Points: {userData.points}</Text>
-      <Text style={styles.text}>Level: {userData.level}</Text>
-      <Image source={{ uri: userData.profileImage }} style={styles.profileImage} />
-
-      <TextInput
-        style={styles.textInput}
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        editable={!readOnly}
-      />
-
-      <TextInput
-        style={styles.textInput}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        editable={!readOnly}
-        keyboardType="email-address"
-      />
-
-      <Text style={styles.text}>Theme: {theme}</Text>
-      <Button
-        title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Theme`}
-        onPress={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-        disabled={readOnly}
-      />
-
-      {!readOnly && (
-        <>
-          {saveSuccess && (
-            <Text style={{ color: 'green', marginBottom: 10 }}>Saved successfully!</Text>
+    <LinearGradient
+      colors={['#F0E8D0', '#7BB8CC']}
+      start={{ x: 0, y: 1 }}
+      end={{ x: 1, y: 0 }}
+      style={styles.gradientBackground}
+    >
+      <View style={styles.container}>
+        <TouchableOpacity
+          onPress={() => !readOnly && setIsEditingName(!isEditingName)}
+          disabled={readOnly}
+        >
+          {isEditingName && !readOnly ? (
+            <TextInput
+              style={styles.nameInput}
+              value={username}
+              onChangeText={setUsername}
+              onBlur={() => setIsEditingName(false)}
+              onSubmitEditing={() => setIsEditingName(false)}
+              autoFocus
+            />
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={styles.text}>{username}</Text>
+              {!readOnly && <MdOutlineEdit size={16} color="#2D4E85" />}
+            </View>
           )}
+        </TouchableOpacity>
 
-          <Button
-            title={saving ? 'Saving...' : 'Save Preferences'}
-            onPress={handleSave}
-            disabled={saving}
+        <Text style={styles.text}>Email:</Text>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          editable={!readOnly}
+          keyboardType="email-address"
+        />
+
+        <Text style={styles.text}>Points: {userData.points}</Text>
+        <Text style={styles.text}>Level: {userData.level}</Text>
+
+        <TouchableOpacity onPress={pickImage} disabled={readOnly}>
+          <Image
+            source={{ uri: profileImageUri || userData.profileImage }}
+            style={[styles.profileImage, readOnly && styles.disabledImage]}
           />
-          <Button title="Log Out" onPress={handleLogout} />
-        </>
-      )}
-    </View>
+          {!readOnly && <Text style={styles.imageHint}>Tap to change photo</Text>}
+        </TouchableOpacity>
+
+        <Text style={styles.text}>Theme: {theme}</Text>
+        <Button
+          title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Theme`}
+          onPress={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          disabled={readOnly}
+        />
+
+        {!readOnly && (
+          <>
+            {saveSuccess && <Text style={{ color: 'green' }}>Saved successfully!</Text>}
+
+            <Button
+              title={saving ? 'Saving...' : 'Save Preferences'}
+              onPress={handleSave}
+              disabled={saving}
+            />
+            <Button title="Log Out" onPress={handleLogout} />
+          </>
+        )}
+      </View>
+    </LinearGradient>
   );
 }
