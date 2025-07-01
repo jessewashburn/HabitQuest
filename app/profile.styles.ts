@@ -15,6 +15,17 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 20,
   },
+  textInput: {
+    height: 40,
+    width: '80%',
+    borderColor: '#888',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginVertical: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
 });
 
 export default styles;
