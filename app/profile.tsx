@@ -3,11 +3,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { MdOutlineEdit } from 'react-icons/md'; 
+import { MdOutlineEdit } from 'react-icons/md';
 
 import styles from './profile.styles.ts';
 import { API_BASE_URL } from './config.ts';
-import { useTheme } from '@/hooks/ThemeContext.tsx'; 
+import { useTheme } from '@/hooks/ThemeContext.tsx';
 
 interface User {
   name: string;
