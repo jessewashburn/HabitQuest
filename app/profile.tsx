@@ -8,6 +8,12 @@ import { MdOutlineEdit } from 'react-icons/md';
 import styles from './profile.styles.ts';
 import { API_BASE_URL } from './config.ts';
 import { useTheme } from '@/hooks/ThemeContext.tsx';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { MdOutlineEdit } from 'react-icons/md';
+import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
+import styles from './profile.styles';
 
 interface User {
   name: string;
@@ -39,6 +45,14 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   const [error, setError] = useState('');
 
   const { theme, setTheme } = useTheme();
+  const { user: authUser, logout } = useAuth();
+
+  const userData = user ?? {
+    name: authUser?.username || userName,
+    points: 0,
+    level: 1,
+    profileImage: "https://static.vecteezy.com/system/resources/previews/000/574/512/original/vector-sign-of-user-icon.jpg",
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -73,6 +87,11 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
 
     fetchProfile();
   }, []);
+  const handleLogout = () => {
+    if (readOnly) return;
+    logout();
+    router.replace('/login');
+  };
 
   const pickImage = async () => {
     if (readOnly) return;
