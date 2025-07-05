@@ -128,6 +128,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
+  statsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 16,
+    borderRadius: 12,
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  statsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D4E85',
+    textAlign: 'center',
+  },
 });
 
 export default styles;

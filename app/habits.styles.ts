@@ -11,9 +11,11 @@ const styles = StyleSheet.create({
   narrowContainer: {
     width: '80%',
     alignSelf: 'center',
+    flex: 1,
   },
   scrollContent: {
     marginTop: 16,
+    flexGrow: 1,
   },
   title: {
     fontSize: 32,
