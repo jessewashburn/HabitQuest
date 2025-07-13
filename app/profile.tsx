@@ -1,13 +1,13 @@
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { MdOutlineEdit } from 'react-icons/md';
 import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/hooks/ThemeContext';
-import { useAuth } from '../contexts/AuthContext';
-import { API_BASE_URL } from './config';
+import { useAuth } from '../contexts/AuthContext.js';
+import { API_BASE_URL } from './config.js';
 import styles from './profile.styles';
 
 // Feature flags - toggle these based on what's available
@@ -43,6 +43,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   //state variables
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const { theme, setTheme, colors } = useTheme();
   const [userData, setUserData] = useState<User>({
     name: 'User Profile',
     points: 0,
@@ -59,8 +60,8 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   // Current working state (for fallback)
   const [userName, setUserName] = useState("Enter a display name");
 
-  const { theme, setTheme } = useTheme();
   const { user: authUser, logout } = useAuth();
+  const router = useRouter();
 
   //useEffect for fetching profile
   useEffect(() => {
@@ -414,15 +415,15 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   }
 
   return (
-    <LinearGradient
-      colors={['#F0E8D0', '#7BB8CC']}
-      start={{ x: 0, y: 1 }}
-      end={{ x: 1, y: 0 }}
-      style={styles.gradientBackground}
-    >
-      <View style={styles.container}>
+<LinearGradient
+  colors={colors.gradient as [string, string]}  start={{ x: 0, y: 1 }}
+  end={{ x: 1, y: 0 }}
+  style={styles.gradientBackground}
+>
+
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.narrowContainer}>
-          <Text style={styles.title}>Profile</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
         </View>
         <View style={styles.contentContainer}>
           <TouchableOpacity 
