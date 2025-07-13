@@ -86,6 +86,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     opacity: 0.6,
   },
+  textInput: {
+    height: 40,
+    width: '80%',
+    borderColor: '#888',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginVertical: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
 });
 
 export default styles;
