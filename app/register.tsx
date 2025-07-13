@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Image, Pressable, Text, TextInput, View } from 'react-native';
+import { authAPI } from '../services/api';
 import styles from './index.styles';
 
 export default function Register() {
@@ -34,12 +35,17 @@ export default function Register() {
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('📝 Attempting AWS registration with real API...');
+      const newUser = await authAPI.register({
+        username: username.trim(),
+        email: email.trim(),
+        password: password.trim()
+      });
       
+      console.log('✅ Registration successful:', newUser);
       Alert.alert(
         'Success', 
-        `Account created for ${username}! You can now log in with admin/admin for testing.`,
+        `Account created for ${username}! You can now log in.`,
         [
           {
             text: 'OK',
@@ -47,8 +53,9 @@ export default function Register() {
           },
         ]
       );
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Registration failed:', error);
+      Alert.alert('Registration Failed', error.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

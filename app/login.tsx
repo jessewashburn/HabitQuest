@@ -3,42 +3,36 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { authAPI } from '../services/api';
 import styles from './index.styles';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async () => {
-    setLoading(true);
-    
-    try {
-      const trimmedUsername = username.trim();
-      const trimmedPassword = password.trim();
-      
-      if (trimmedUsername === 'admin' && trimmedPassword === 'admin') {
-        login(trimmedUsername);
-        router.replace('/home');
-      } else {
-        Alert.alert('Login Failed', 'Invalid credentials. Try admin/admin for testing.');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Validation Error', 'Please enter both email and password');
+      return;
     }
-  };
 
-  const handleGuestLogin = async () => {
     setLoading(true);
-    
     try {
-      login('Guest');
+      console.log('� Attempting AWS login with real API...');
+      const result = await authAPI.login({ 
+        email: email.trim(), 
+        password: password.trim() 
+      });
+      
+      console.log('✅ Login successful:', result);
+      login(result.user.username); // Pass username to context
       router.replace('/home');
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      Alert.alert('Success', 'Login successful!');
+    } catch (error: any) {
+      console.error('❌ Login failed:', error);
+      Alert.alert('Login Failed', error.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
@@ -66,19 +60,22 @@ export default function Login() {
 
         <View style={styles.formContainer}>
           <TextInput
-            placeholder="Username (try: admin)"
-            value={username}
-            onChangeText={setUsername}
+            placeholder="Email address"
+            value={email}
+            onChangeText={setEmail}
             style={styles.input}
             autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
             editable={!loading}
           />
           <TextInput
-            placeholder="Password (try: admin)"
+            placeholder="Password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             style={styles.input}
+            autoComplete="password"
             editable={!loading}
           />
 
@@ -89,16 +86,6 @@ export default function Login() {
           >
             <Text style={styles.buttonText}>
               {loading ? 'Signing In...' : 'Login'}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[styles.button, styles.secondaryButton]}
-            onPress={handleGuestLogin}
-            disabled={loading}
-          >
-            <Text style={styles.secondaryButtonText}>
-              {loading ? 'Signing In...' : 'Continue as Guest'}
             </Text>
           </Pressable>
 
