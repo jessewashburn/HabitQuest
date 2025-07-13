@@ -11,13 +11,13 @@ export default function Layout() {
   return (
     <AuthProvider>
       <HabitsProvider>
-      <ThemeProvider>
-        <View style={{ flex: 1 }}>
-          <Navbar />
-          <Slot />
-        </View>
+        <ThemeProvider>
+          <View style={{ flex: 1 }}>
+            <Navbar />
+            <Slot />
+          </View>
+        </ThemeProvider>
       </HabitsProvider>
-      </ThemeProvider>
     </AuthProvider>
   );
 }
