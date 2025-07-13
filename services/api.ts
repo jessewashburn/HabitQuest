@@ -145,7 +145,9 @@ export const tokenUtils = {
 export const authAPI = {
   async register(userData: RegisterData): Promise<User> {
     console.log('📝 Attempting to register user:', { username: userData.username, email: userData.email });
-    return await makeRequest('/auth/register', {
+    
+    console.log('🔍 Using correct endpoint: /api/users/signup');
+    return await makeRequest('/api/users/signup', {
       method: 'POST',
       body: JSON.stringify(userData)
     });
@@ -153,7 +155,9 @@ export const authAPI = {
 
   async login(loginData: LoginData): Promise<LoginResponse> {
     console.log('🔑 Attempting to login user:', { email: loginData.email });
-    const result = await makeRequest('/auth/login', {
+    
+    console.log('🔍 Using correct endpoint: /api/users/signin');
+    const result = await makeRequest('/api/users/signin', {
       method: 'POST',
       body: JSON.stringify(loginData)
     });

@@ -20,14 +20,15 @@ export default function Login() {
 
     setLoading(true);
     try {
-      console.log('� Attempting AWS login with real API...');
+      console.log('🔑 Attempting AWS login with real API...');
       const result = await authAPI.login({ 
         email: email.trim(), 
         password: password.trim() 
       });
       
       console.log('✅ Login successful:', result);
-      login(result.user.username); // Pass username to context
+      // Use email as username since backend only returns { message, token }
+      login(email.trim());
       router.replace('/home');
       Alert.alert('Success', 'Login successful!');
     } catch (error: any) {
