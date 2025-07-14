@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Image, Pressable, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, Text, TextInput, View } from 'react-native';
+import { authAPI } from '../services/api';
 import styles from './index.styles';
 
 export default function Register() {
@@ -10,45 +11,70 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    general?: string;
+    username?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
+
+  const clearErrors = () => {
+    setErrors({});
+  };
 
   const handleRegister = async () => {
     setLoading(true);
+    clearErrors();
     
     // Basic validation
     if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setErrors({ general: 'Please fill in all fields' });
+      setLoading(false);
+      return;
+    }
+
+    // Username validation
+    if (username.trim().length < 3) {
+      setErrors({ username: 'Username must be at least 3 characters long' });
+      setLoading(false);
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setErrors({ email: 'Please enter a valid email address' });
+      setLoading(false);
+      return;
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      setErrors({ password: 'Password must be at least 6 characters long' });
       setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
+      setErrors({ confirmPassword: 'Passwords do not match' });
       setLoading(false);
       return;
     }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('📝 Attempting AWS registration with real API...');
+      const newUser = await authAPI.register({
+        username: username.trim(),
+        email: email.trim(),
+        password: password.trim()
+      });
       
-      Alert.alert(
-        'Success', 
-        `Account created for ${username}! You can now log in with admin/admin for testing.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      console.log('✅ Registration successful:', newUser);
+      router.back();
+    } catch (error: any) {
+      console.error('❌ Registration failed:', error);
+      setErrors({ general: error.message || 'Something went wrong. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -75,39 +101,70 @@ export default function Register() {
         <Text style={styles.subtitle}>Start your journey to better habits</Text>
 
         <View style={styles.formContainer}>
+          {errors.general && (
+            <Text style={styles.errorText}>{errors.general}</Text>
+          )}
+          
           <TextInput
             placeholder="Username"
             value={username}
-            onChangeText={setUsername}
-            style={styles.input}
+            onChangeText={(text) => {
+              setUsername(text);
+              if (errors.username) clearErrors();
+            }}
+            style={[styles.input, errors.username && styles.inputError]}
             autoCapitalize="none"
             editable={!loading}
           />
+          {errors.username && (
+            <Text style={styles.errorText}>{errors.username}</Text>
+          )}
+          
           <TextInput
             placeholder="Email"
             value={email}
-            onChangeText={setEmail}
-            style={styles.input}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) clearErrors();
+            }}
+            style={[styles.input, errors.email && styles.inputError]}
             autoCapitalize="none"
             keyboardType="email-address"
             editable={!loading}
           />
+          {errors.email && (
+            <Text style={styles.errorText}>{errors.email}</Text>
+          )}
+          
           <TextInput
             placeholder="Password (min 6 characters)"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) clearErrors();
+            }}
             secureTextEntry
-            style={styles.input}
+            style={[styles.input, errors.password && styles.inputError]}
             editable={!loading}
           />
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
+          
           <TextInput
             placeholder="Confirm Password"
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (errors.confirmPassword) clearErrors();
+            }}
             secureTextEntry
-            style={styles.input}
+            style={[styles.input, errors.confirmPassword && styles.inputError]}
             editable={!loading}
           />
+          {errors.confirmPassword && (
+            <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+          )}
 
           <Pressable
             style={[styles.button, styles.primaryButton, loading && styles.buttonDisabled]}
