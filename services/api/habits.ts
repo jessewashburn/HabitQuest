@@ -1,34 +1,45 @@
 // Habits API endpoints
+import type { Category } from './categories';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
 
+export type HabitStatus = 'Active' | 'Draft' | 'Completed' | 'Cancelled' | 'Deleted';
+
 export type Habit = {
   id: string;
   name: string;
-  description?: string;
-  frequency: string;
-  completed: boolean;
-  streak: number;
-  points: number;
-  category: 'Health' | 'Productivity' | 'Spiritual';
-  lastCompletedDate?: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdDate: string;
+  startDate: string | null;
+  status: HabitStatus;
+  user: {
+    id: string;
+    email: string;
+    username: string;
+  };
+  category: Category;
 };
 
 export type CreateHabitData = {
   name: string;
-  description?: string;
-  category: 'Health' | 'Productivity' | 'Spiritual';
-  frequency: string;
+  startDate?: string;
+  userId: string;
+  categoryId: string;
+  status?: HabitStatus;
+};
+
+export type UpdateHabitData = {
+  name?: string;
+  status?: string;
+  startDate?: string;
+  category?: string; // allow category for backend
 };
 
 // Helper function to handle API responses
 async function handleResponse(response: Response, endpoint: string) {
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`API Error for ${endpoint}:`, errorText);
     throw new Error(response.statusText || 'Network error');
   }
   return await response.json();
@@ -51,22 +62,23 @@ async function makeRequest(endpoint: string, options: RequestInit = {}) {
   return await handleResponse(response, endpoint);
 }
 
-// Token utilities
+// Token utilities - Use localStorage like the users API
 const getToken = (): string | null => {
   return localStorage.getItem('authToken');
 };
 
 export const habitsAPI = {
-  async getHabits(): Promise<Habit[]> {
+  // Get habits for a specific user (based on the backend route structure)
+  async getHabitsByUser(userId: string): Promise<Habit[]> {
     const token = getToken();
-    return await makeRequest('/api/habits', {
+    return await makeRequest(`/api/habits/${userId}/get`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
   },
 
-  async createHabit(habitData: CreateHabitData): Promise<Habit> {
+  async createHabit(habitData: CreateHabitData): Promise<{ message: string; habit: Habit }> {
     const token = getToken();
     return await makeRequest('/api/habits/create', {
       method: 'POST',
@@ -77,7 +89,7 @@ export const habitsAPI = {
     });
   },
 
-  async updateHabit(habitId: string, habitData: Partial<CreateHabitData>): Promise<Habit> {
+  async updateHabit(habitId: string, habitData: UpdateHabitData): Promise<{ message: string; habit: Habit }> {
     const token = getToken();
     return await makeRequest(`/api/habits/${habitId}/update`, {
       method: 'PATCH',
@@ -88,20 +100,10 @@ export const habitsAPI = {
     });
   },
 
-  async deleteHabit(habitId: string): Promise<void> {
+  async deleteHabit(habitId: string): Promise<{ message: string }> {
     const token = getToken();
-    await makeRequest(`/api/habits/${habitId}/delete`, {
+    return await makeRequest(`/api/habits/${habitId}/delete`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-  },
-
-  async completeHabit(habitId: string): Promise<Habit> {
-    const token = getToken();
-    return await makeRequest(`/api/habits/${habitId}/complete`, {
-      method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
       }

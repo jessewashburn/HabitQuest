@@ -1,14 +1,222 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
 import { useHabits } from '../contexts/HabitsContext';
+import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api';
 import styles from './habits.styles';
 
 export default function HabitsPage() {
-  const { habits, toggleHabit } = useHabits();
+  const { 
+    habits, 
+    loading, 
+    error, 
+    createHabit,
+    updateHabit, 
+    deleteHabit,
+    getActiveHabits, 
+    getDraftHabits 
+  } = useHabits();
+  
+  const { user } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    categoryId: '',
+    status: 'Draft' as 'Active' | 'Draft' | 'Completed' | 'Cancelled' | 'Deleted',
+    startDate: ''
+  });
+
+  const activeHabits = getActiveHabits();
+  const draftHabits = getDraftHabits();
+  const completedHabits = habits.filter(h => h.status === 'Completed');
+
+  // Load categories on component mount
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const fetchedCategories = await categoriesAPI.getCategories();
+      setCategories(fetchedCategories);
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      categoryId: '',
+      status: 'Draft',
+      startDate: ''
+    });
+    setEditingHabit(null);
+  };
+
+  const handleCreateHabit = async () => {
+    if (!formData.name.trim() || !formData.categoryId || !user?.id) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    // Validate start date for non-Draft habits
+    let startDate = formData.startDate;
+    if (formData.status !== 'Draft') {
+      if (!startDate) {
+        // Auto-set to today's date if not provided for non-Draft habits
+        startDate = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    try {
+      await createHabit({
+        name: formData.name.trim(),
+        categoryId: formData.categoryId,
+        userId: user.id,
+        status: formData.status,
+        startDate: startDate || undefined
+      });
+      
+      setShowCreateModal(false);
+      resetForm();
+      Alert.alert('Success', 'Habit created successfully!');
+    } catch (error) {
+      console.error('Failed to create habit:', error);
+      Alert.alert('Error', 'Failed to create habit');
+    }
+  };
+
+  const handleUpdateHabit = async () => {
+    if (!editingHabit || !formData.name.trim() || !formData.categoryId) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    // Validate start date for non-Draft habits
+    let startDate = formData.startDate;
+    if (formData.status !== 'Draft') {
+      if (!startDate) {
+        // Auto-set to today's date if not provided for non-Draft habits
+        startDate = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    try {
+      await updateHabit(editingHabit.id, {
+        name: formData.name.trim(),
+        status: formData.status,
+        startDate: startDate || undefined,
+        category: formData.categoryId
+      });
+      setEditingHabit(null);
+      resetForm();
+      Alert.alert('Success', 'Habit updated successfully!');
+    } catch (error) {
+      console.error('Failed to update habit:', error);
+      Alert.alert('Error', 'Failed to update habit');
+    }
+  };
+
+  const handleDeleteHabit = async (habitId: string, habitName: string) => {
+    Alert.alert(
+      'Delete Habit',
+      `Are you sure you want to delete "${habitName}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteHabit(habitId);
+              Alert.alert('Success', 'Habit deleted successfully!');
+            } catch (error) {
+              console.error('Failed to delete habit:', error);
+              Alert.alert('Error', 'Failed to delete habit');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleEditHabit = (habit: Habit) => {
+    setEditingHabit(habit);
+    setFormData({
+      name: habit.name || '',
+      categoryId: habit.category?.id || '',
+      status: habit.status || 'Draft',
+      startDate: habit.startDate || ''
+    });
+  };
+
+  const handleStatusToggle = async (habitId: string, currentStatus: string) => {
+    try {
+      // Toggle between Active and Completed
+      const newStatus = currentStatus === 'Active' ? 'Completed' : 'Active';
+      
+      // Find the habit to get current data
+      const habit = habits.find(h => h.id === habitId);
+      if (!habit) return;
+      
+      // Prepare update data
+      const updateData: UpdateHabitData = { status: newStatus };
+      
+      // Both Active and Completed require a start date according to backend validation
+      if (!habit.startDate) {
+        updateData.startDate = new Date().toISOString().split('T')[0];
+      }
+      // If the habit already has a start date, include it to maintain consistency
+      else {
+        updateData.startDate = habit.startDate;
+      }
+      
+      await updateHabit(habitId, updateData);
+    } catch (error) {
+      console.error('Failed to update habit status:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <LinearGradient
+        colors={['#F5EDD8', '#6BA8D6']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientBackground}
+      >
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color="#4A6741" />
+          <Text style={styles.loadingText}>Loading your habits...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (error) {
+    return (
+      <LinearGradient
+        colors={['#F5EDD8', '#6BA8D6']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientBackground}
+      >
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
 
   return (
-    <LinearGradient
+    <>
+      <LinearGradient
       colors={['#F5EDD8', '#6BA8D6']}
       start={{ x: 0, y: 1 }}
       end={{ x: 0, y: 0 }}
@@ -16,34 +224,261 @@ export default function HabitsPage() {
     >
       <View style={styles.container}>
         <View style={styles.narrowContainer}>
-          <Text style={styles.title}>Your Daily Habits</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Text style={styles.title}>Your Habits</Text>
+            <TouchableOpacity 
+              style={[styles.checkbox, { backgroundColor: '#4A6741', padding: 8 }]}
+              onPress={() => setShowCreateModal(true)}
+            >
+              <Text style={[styles.checkmark, { fontSize: 20 }]}>+</Text>
+            </TouchableOpacity>
+          </View>
+          
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
             style={{ flex: 1 }}
           >
-            {habits.map(habit => (
-              <TouchableOpacity 
-                key={habit.id} 
-                style={[styles.card, habit.isCompleted && styles.completedCard]}
-                onPress={() => toggleHabit(habit.id)}
-                activeOpacity={0.7}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.habitName, habit.isCompleted && styles.completedText]}>{habit.name}</Text>
-                  <Text style={styles.category}>{habit.category}</Text>
-                  {habit.note && <Text style={styles.note}>{habit.note}</Text>}
-                  <Text style={styles.meta}>🔥 Streak: {habit.streak} days</Text>
-                  <Text style={styles.meta}>🏆 Points: {habit.points}</Text>
-                </View>
-                <View style={[styles.checkbox, habit.isCompleted && styles.checkedBox]}>
-                  {habit.isCompleted && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-              </TouchableOpacity>
-            ))}
+            {/* Active Habits */}
+            {activeHabits.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>Active Habits</Text>
+                {activeHabits.map((habit: Habit) => (
+                  <TouchableOpacity 
+                    key={habit.id} 
+                    style={[styles.card]}
+                    onPress={() => handleStatusToggle(habit.id, habit.status)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.habitName}>{habit.name}</Text>
+                      <Text style={styles.category}>
+                        {habit.category && habit.category.name ? habit.category.name : 'No category'}
+                      </Text>
+                      <Text style={styles.meta}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
+                      <Text style={styles.meta}>📊 Status: {habit.status}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <TouchableOpacity 
+                        style={[styles.checkbox, { backgroundColor: '#2D4E85' }]}
+                        onPress={() => handleEditHabit(habit)}
+                      >
+                        <Text style={styles.checkmark}>✏️</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
+                        onPress={() => deleteHabit(habit.id)}
+                      >
+                        <Text style={styles.checkmark}>🗑️</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+
+            {/* Completed Habits */}
+            {completedHabits.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>Completed Habits</Text>
+                {completedHabits.map((habit: Habit) => (
+                  <TouchableOpacity 
+                    key={habit.id} 
+                    style={[styles.card, styles.completedCard]}
+                    onPress={() => handleStatusToggle(habit.id, habit.status)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.habitName, styles.completedText]}>{habit.name}</Text>
+                      <Text style={styles.category}>
+                        {habit.category && habit.category.name ? habit.category.name : 'No category'}
+                      </Text>
+                      <Text style={styles.meta}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
+                      <Text style={styles.meta}>📊 Status: {habit.status}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <TouchableOpacity 
+                        style={[styles.checkbox, { backgroundColor: '#2D4E85' }]}
+                        onPress={() => handleEditHabit(habit)}
+                      >
+                        <Text style={styles.checkmark}>✏️</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
+                        onPress={() => deleteHabit(habit.id)}
+                      >
+                        <Text style={styles.checkmark}>🗑️</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+
+            {/* Draft Habits */}
+            {draftHabits.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>Draft Habits</Text>
+                {draftHabits.map((habit: Habit) => (
+                  <TouchableOpacity 
+                    key={habit.id} 
+                    style={[styles.card, styles.draftCard]}
+                    onPress={() => handleStatusToggle(habit.id, habit.status)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.habitName}>{habit.name}</Text>
+                      <Text style={styles.category}>
+                        {habit.category && habit.category.name ? habit.category.name : 'No category'}
+                      </Text>
+                      <Text style={styles.meta}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
+                      <Text style={styles.meta}>📊 Status: {habit.status}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <TouchableOpacity 
+                        style={[styles.checkbox, { backgroundColor: '#2D4E85' }]}
+                        onPress={() => handleEditHabit(habit)}
+                      >
+                        <Text style={styles.checkmark}>✏️</Text>
+                      </TouchableOpacity>
+                      <View style={styles.checkbox}>
+                        <Text style={styles.checkmark}>📝</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+
+            {habits.length === 0 && (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>No habits yet!</Text>
+                <Text style={styles.emptySubtitle}>Start building better habits today.</Text>
+              </View>
+            )}
           </ScrollView>
         </View>
       </View>
     </LinearGradient>
+
+    {/* Create/Edit Habit Modal */}
+    <Modal
+      visible={showCreateModal || editingHabit !== null}
+      animationType="slide"
+      presentationStyle="pageSheet"
+    >
+      <LinearGradient
+        colors={['#F5EDD8', '#6BA8D6']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientBackground}
+      >
+        <View style={styles.container}>
+          <View style={styles.narrowContainer}>
+            <Text style={styles.title}>
+              {editingHabit ? 'Edit Habit' : 'Create New Habit'}
+            </Text>
+            
+            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+              {/* Habit Name */}
+              <Text style={styles.sectionTitle}>Habit Name</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.name}
+                onChangeText={(text: string) => setFormData(prev => ({ ...prev, name: text }))}
+                placeholder="Enter habit name"
+                maxLength={100}
+              />
+              
+              {/* Category */}
+              <Text style={styles.sectionTitle}>Category</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={[
+                      styles.categoryButton,
+                      formData.categoryId === category.id && styles.selectedCategory
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, categoryId: category.id }))}
+                  >
+                    <Text style={[
+                      styles.categoryButtonText,
+                      formData.categoryId === category.id && styles.selectedCategoryText
+                    ]}>
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              
+              {/* Status */}
+              <Text style={styles.sectionTitle}>Status</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                {(['Draft', 'Active'] as const).map((status) => (
+                  <TouchableOpacity
+                    key={status}
+                    style={[
+                      styles.categoryButton,
+                      formData.status === status && styles.selectedCategory
+                    ]}
+                    onPress={() => {
+                      const newFormData = { ...formData, status };
+                      // Auto-populate start date for non-Draft status
+                      if (status !== 'Draft' && !formData.startDate) {
+                        newFormData.startDate = new Date().toISOString().split('T')[0];
+                      }
+                      setFormData(newFormData);
+                    }}
+                  >
+                    <Text style={[
+                      styles.categoryButtonText,
+                      formData.status === status && styles.selectedCategoryText
+                    ]}>
+                      {status}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              
+              {/* Start Date */}
+              <Text style={styles.sectionTitle}>
+                Start Date {formData.status !== 'Draft' ? '(Required for Active/Completed)' : '(Optional)'}
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={formData.startDate}
+                onChangeText={(text: string) => setFormData(prev => ({ ...prev, startDate: text }))}
+                placeholder={formData.status !== 'Draft' ? 'YYYY-MM-DD (Required)' : 'YYYY-MM-DD (Optional)'}
+                maxLength={10}
+              />
+              
+              {/* Action Buttons */}
+              <View style={{ flexDirection: 'row', gap: 12, marginTop: 24 }}>
+                <TouchableOpacity 
+                  style={[styles.card, { flex: 1, alignItems: 'center', backgroundColor: '#d32f2f' }]}
+                  onPress={() => {
+                    setShowCreateModal(false);
+                    resetForm();
+                  }}
+                >
+                  <Text style={[styles.habitName, { color: 'white' }]}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.card, { flex: 1, alignItems: 'center', backgroundColor: '#4A6741' }]}
+                  onPress={editingHabit ? handleUpdateHabit : handleCreateHabit}
+                >
+                  <Text style={[styles.habitName, { color: 'white' }]}>
+                    {editingHabit ? 'Update' : 'Create'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </LinearGradient>
+    </Modal>
+  </>
   );
 }
