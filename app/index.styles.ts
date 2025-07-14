@@ -128,6 +128,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
+  errorText: {
+    color: '#e74c3c',
+    fontSize: 14,
+    marginBottom: 8,
+    marginTop: -8,
+  },
+  inputError: {
+    borderColor: '#e74c3c',
+    borderWidth: 2,
+  },
   statsContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     padding: 16,

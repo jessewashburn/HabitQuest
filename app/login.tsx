@@ -10,11 +10,34 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{email?: string, password?: string, general?: string}>({});
   const { login } = useAuth();
 
+  const clearErrors = () => {
+    setErrors({});
+  };
+
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Validation Error', 'Please enter both email and password');
+    clearErrors();
+    
+    // Validation
+    const newErrors: {email?: string, password?: string, general?: string} = {};
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+    }
+    
+    if (!password.trim()) {
+      newErrors.password = 'Password is required';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -33,7 +56,8 @@ export default function Login() {
       Alert.alert('Success', 'Login successful!');
     } catch (error: any) {
       console.error('❌ Login failed:', error);
-      Alert.alert('Login Failed', error.message || 'Invalid credentials');
+      console.log('🚨 About to show alert with message:', error.message);
+      setErrors({ general: error.message || 'Invalid credentials' });
     } finally {
       setLoading(false);
     }
@@ -60,25 +84,42 @@ export default function Login() {
         <Text style={styles.subtitle}>Track your habits. Level up your life.</Text>
 
         <View style={styles.formContainer}>
+          {errors.general && (
+            <Text style={styles.errorText}>{errors.general}</Text>
+          )}
+          
           <TextInput
             placeholder="Email address"
             value={email}
-            onChangeText={setEmail}
-            style={styles.input}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) clearErrors();
+            }}
+            style={[styles.input, errors.email && styles.inputError]}
             autoCapitalize="none"
             keyboardType="email-address"
             autoComplete="email"
             editable={!loading}
           />
+          {errors.email && (
+            <Text style={styles.errorText}>{errors.email}</Text>
+          )}
+          
           <TextInput
             placeholder="Password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) clearErrors();
+            }}
             secureTextEntry
-            style={styles.input}
+            style={[styles.input, errors.password && styles.inputError]}
             autoComplete="password"
             editable={!loading}
           />
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
 
           <Pressable
             style={[styles.button, styles.primaryButton, loading && styles.buttonDisabled]}
