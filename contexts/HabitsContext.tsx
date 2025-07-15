@@ -68,10 +68,12 @@ export const HabitsProvider: React.FC<HabitsProviderProps> = ({ children }) => {
   const updateHabit = async (id: string, updates: UpdateHabitData) => {
     try {
       setError(null);
-      const result = await habitsAPI.updateHabit(id, updates);
-      setHabits(prev => prev.map(habit => 
-        habit.id === id ? result.habit : habit
-      ));
+      await habitsAPI.updateHabit(id, updates);
+      // Refetch all habits to ensure category is populated
+      if (user?.id) {
+        const fetchedHabits = await habitsAPI.getHabitsByUser(user.id);
+        setHabits(fetchedHabits);
+      }
     } catch (err) {
       console.error('Failed to update habit:', err);
       setError(err instanceof Error ? err.message : 'Failed to update habit');

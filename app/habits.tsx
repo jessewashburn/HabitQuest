@@ -98,22 +98,14 @@ export default function HabitsPage() {
       return;
     }
 
-    // Validate start date for non-Draft habits
-    let startDate = formData.startDate;
-    if (formData.status !== 'Draft') {
-      if (!startDate) {
-        // Auto-set to today's date if not provided for non-Draft habits
-        startDate = new Date().toISOString().split('T')[0];
-      }
-    }
-
     try {
-      await updateHabit(editingHabit.id, {
+      const updatePayload: any = {
         name: formData.name.trim(),
-        status: formData.status,
-        startDate: startDate || undefined,
-        category: formData.categoryId
-      });
+        status: formData.status
+      };
+      if (formData.startDate) updatePayload.startDate = formData.startDate;
+      if (formData.categoryId) updatePayload.categoryId = formData.categoryId;
+      await updateHabit(editingHabit.id, updatePayload);
       setEditingHabit(null);
       resetForm();
       Alert.alert('Success', 'Habit updated successfully!');
@@ -217,28 +209,35 @@ export default function HabitsPage() {
   return (
     <>
       <LinearGradient
-      colors={['#F5EDD8', '#6BA8D6']}
-      start={{ x: 0, y: 1 }}
-      end={{ x: 0, y: 0 }}
-      style={styles.gradientBackground}
-    >
-      <View style={styles.container}>
-        <View style={styles.narrowContainer}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <Text style={styles.title}>Your Habits</Text>
-            <TouchableOpacity 
-              style={[styles.checkbox, { backgroundColor: '#4A6741', padding: 8 }]}
+        colors={['#F5EDD8', '#6BA8D6']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientBackground}
+      >
+        <View style={styles.container}>
+          <View style={styles.narrowContainer}>
+            <View style={{ alignItems: 'center', marginBottom: 16 }}>
+              <Text style={styles.title}>Your Habits</Text>
+            </View>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#4A6741',
+                paddingVertical: 10,
+                paddingHorizontal: 24,
+                borderRadius: 8,
+                alignSelf: 'center',
+                marginBottom: 16
+              }}
               onPress={() => setShowCreateModal(true)}
             >
-              <Text style={[styles.checkmark, { fontSize: 20 }]}>+</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>New Habit</Text>
             </TouchableOpacity>
-          </View>
-          
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-            style={{ flex: 1 }}
-          >
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              style={{ flex: 1 }}
+            >
             {/* Active Habits */}
             {activeHabits.length > 0 && (
               <>

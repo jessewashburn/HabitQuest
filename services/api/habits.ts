@@ -32,7 +32,8 @@ export type UpdateHabitData = {
   name?: string;
   status?: string;
   startDate?: string;
-  category?: string; // allow category for backend
+  categoryId?: string; // allow categoryId for backend
+  category?: string; // allow category for backend update
 };
 
 // Helper function to handle API responses
