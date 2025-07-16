@@ -7,6 +7,17 @@ import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api
 import styles from './habits.styles';
 
 export default function HabitsPage() {
+  // Snackbar modal state
+  const [snackbar, setSnackbar] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState<{ id: string; name: string } | null>(null);
+
+  // Auto-dismiss snackbar after 2s
+  React.useEffect(() => {
+    if (snackbar) {
+      const timer = setTimeout(() => setSnackbar(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [snackbar]);
   const { 
     habits, 
     loading, 
@@ -61,7 +72,7 @@ export default function HabitsPage() {
 
   const handleCreateHabit = async () => {
     if (!formData.name.trim() || !formData.categoryId || !user?.id) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      setSnackbar({ type: 'error', message: 'Please fill in all required fields' });
       return;
     }
 
@@ -82,40 +93,34 @@ export default function HabitsPage() {
         status: formData.status,
         startDate: startDate || undefined
       });
-      
       setShowCreateModal(false);
       resetForm();
-      Alert.alert('Success', 'Habit created successfully!');
+      setSnackbar({ type: 'success', message: 'Habit created successfully!' });
     } catch (error) {
       console.error('Failed to create habit:', error);
-      Alert.alert('Error', 'Failed to create habit');
+      setSnackbar({ type: 'error', message: 'Failed to create habit' });
     }
   };
 
   const handleUpdateHabit = async () => {
-    if (!editingHabit || !formData.name.trim() || !formData.categoryId) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (!editingHabit || !formData.name.trim()) {
+      setSnackbar({ type: 'error', message: 'Please enter a habit name.' });
       return;
     }
 
     try {
-      const updatePayload: any = {
-        name: formData.name.trim(),
-        status: formData.status
-      };
-      if (formData.startDate) updatePayload.startDate = formData.startDate;
-      if (formData.categoryId) updatePayload.categoryId = formData.categoryId;
-      await updateHabit(editingHabit.id, updatePayload);
+      await updateHabit(editingHabit.id, { name: formData.name.trim() });
       setEditingHabit(null);
       resetForm();
-      Alert.alert('Success', 'Habit updated successfully!');
+      setSnackbar({ type: 'success', message: 'Habit updated successfully!' });
     } catch (error) {
       console.error('Failed to update habit:', error);
-      Alert.alert('Error', 'Failed to update habit');
+      setSnackbar({ type: 'error', message: 'Failed to update habit' });
     }
   };
 
   const handleDeleteHabit = async (habitId: string, habitName: string) => {
+    // Use Alert for confirmation, then show snackbar for result
     Alert.alert(
       'Delete Habit',
       `Are you sure you want to delete "${habitName}"?`,
@@ -127,10 +132,9 @@ export default function HabitsPage() {
           onPress: async () => {
             try {
               await deleteHabit(habitId);
-              Alert.alert('Success', 'Habit deleted successfully!');
+              setSnackbar({ type: 'success', message: 'Habit deleted successfully!' });
             } catch (error) {
-              console.error('Failed to delete habit:', error);
-              Alert.alert('Error', 'Failed to delete habit');
+              setSnackbar({ type: 'error', message: 'Failed to delete habit' });
             }
           }
         }
@@ -238,6 +242,34 @@ export default function HabitsPage() {
               contentContainerStyle={styles.scrollContent}
               style={{ flex: 1 }}
             >
+            {/* Snackbar Modal */}
+            {snackbar && (
+              <Modal
+                transparent
+                visible={!!snackbar}
+                animationType="fade"
+                onRequestClose={() => setSnackbar(null)}
+              >
+                <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+                  <View style={{
+                    backgroundColor: snackbar.type === 'success' ? '#4A6741' : '#d32f2f',
+                    padding: 14,
+                    borderRadius: 8,
+                    marginBottom: 40,
+                    minWidth: 200,
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 4
+                  }}>
+                    <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{snackbar.message}</Text>
+                  </View>
+                </View>
+              </Modal>
+            )}
+
+            {/* Delete Confirmation handled by Alert, no modal needed */}
             {/* Active Habits */}
             {activeHabits.length > 0 && (
               <>
