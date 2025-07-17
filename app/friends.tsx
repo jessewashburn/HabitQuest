@@ -180,7 +180,7 @@ export default function FriendsScreen() {
       end={{ x: 0, y: 0 }}
       style={styles.gradientBackground}
     >
-      <View style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={[styles.container, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}> 
         <View style={styles.narrowContainer}>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Friends</Text>
           <Text style={[styles.text, { color: colors.text }]}>Connect with friends to stay motivated!</Text>

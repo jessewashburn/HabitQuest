@@ -421,7 +421,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   style={styles.gradientBackground}
 >
 
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.container, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}> 
         <View style={styles.narrowContainer}>
         <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
         </View>

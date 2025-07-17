@@ -18,7 +18,7 @@ export default function Welcome() {
       end={{ x: 0, y: 0 }}
       style={styles.gradientBackground}
     >
-      <View style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={[styles.container, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}> 
         <Image
           source={require('../assets/images/logo.png')} 
           style={styles.logo}
