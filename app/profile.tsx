@@ -6,8 +6,8 @@ import { MdOutlineEdit } from 'react-icons/md';
 import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/hooks/ThemeContext';
-import { useAuth } from '../contexts/AuthContext.js';
-import { API_BASE_URL } from './config.js';
+import { useAuth } from '../contexts/AuthContext';
+import { API_BASE_URL } from './config';
 import styles from './profile.styles';
 
 // Feature flags - toggle these based on what's available

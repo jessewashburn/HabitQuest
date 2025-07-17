@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type ThemeType = 'light' | 'dark';
 
@@ -12,11 +12,11 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  background: '#121212',
-  text: '#FFFFFF',
-  buttonBackground: '#444444',
-  buttonText: '#FFFFFF',
-  gradient: ['#1c1c1c', '#333333'],
+  background: '#23272A', // dark grey
+  text: '#F3F3F3', // light grey for text
+  buttonBackground: '#3A3F44', // medium grey for buttons
+  buttonText: '#F3F3F3',
+  gradient: ['#23272A', '#393E46'], // smooth dark gradient
 };
 
 interface ThemeContextType {

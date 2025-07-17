@@ -50,6 +50,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
   },
+  text: {
+    fontSize: 16,
+    color: '#2D4E85',
+  },
   friendNameLink: {
     color: '#2D4E85',
     textDecorationLine: 'underline',

@@ -1,3 +1,4 @@
+import { useTheme } from '@/hooks/ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import { FlatList, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -13,6 +14,7 @@ const TEST_USERS = [
 ];
 
 export default function FriendsScreen() {
+  const { colors } = useTheme();
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState(TEST_USERS);
   const [confirmUnfriend, setConfirmUnfriend] = useState<{ id: string; name: string } | null>(null);
@@ -78,14 +80,15 @@ export default function FriendsScreen() {
 
   return (
     <LinearGradient
-      colors={['#F5EDD8', '#6BA8D6']}
-      start={{ x: 1, y: 0 }}
-      end={{ x: 0, y: 1 }}
+      colors={colors.gradient as [string, string]}
+      start={{ x: 0, y: 1 }}
+      end={{ x: 0, y: 0 }}
       style={styles.gradientBackground}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}> 
         <View style={styles.narrowContainer}>
-          <Text style={styles.pageTitle}>Friends</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>Friends</Text>
+          <Text style={[styles.text, { color: colors.text }]}>Connect with friends to stay motivated!</Text>
           <View style={styles.searchBarContainer}>
             <TextInput
               style={styles.searchBar}
