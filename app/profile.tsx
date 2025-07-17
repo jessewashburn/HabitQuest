@@ -384,7 +384,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
       >
         <View style={styles.container}>
           <View style={styles.contentContainer}>
-            <Text style={styles.text}>Loading profile...</Text>
+            <Text style={[styles.text, { color: colors.text }]}>Loading profile...</Text>
           </View>
         </View>
       </LinearGradient>
@@ -401,7 +401,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
       >
         <View style={styles.container}>
           <View style={styles.contentContainer}>
-            <Text style={styles.text}>{error}</Text>
+            <Text style={[styles.text, { color: colors.text }]}>{error}</Text>
             <TouchableOpacity 
               style={styles.button}
               onPress={() => window.location.reload()}
@@ -443,7 +443,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
               />
             ) : (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Text style={[styles.text, styles.nameText]}>
+                <Text style={[styles.text, styles.nameText, { color: colors.text }]}> 
                   {USE_BACKEND ? username : userName}
                 </Text>
                 {!readOnly && <MdOutlineEdit size={16} color="#2D4E85" />}
@@ -454,7 +454,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
           {/* Show email field only when using backend */}
           {USE_BACKEND && (
             <>
-              <Text style={styles.text}>Email:</Text>
+              <Text style={[styles.text, { color: colors.text }]}>Email:</Text>
               <TextInput
                 style={styles.textInput}
                 placeholder="Email"
@@ -466,8 +466,8 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
             </>
           )}
           
-          <Text style={styles.text}>Points: {userData.points}</Text>
-          <Text style={styles.text}>Level: {userData.level}</Text>
+          <Text style={[styles.text, { color: colors.text }]}>Points: {userData.points}</Text>
+          <Text style={[styles.text, { color: colors.text }]}>Level: {userData.level}</Text>
           
           <TouchableOpacity onPress={pickImage} disabled={readOnly}>
             <Image
@@ -477,7 +477,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
             {!readOnly && <Text style={styles.imageHint}>Tap to change photo</Text>}
           </TouchableOpacity>
 
-          <Text style={styles.text}>Theme: {theme}</Text>
+          <Text style={[styles.text, { color: colors.text }]}>Theme: {theme}</Text>
           
           <TouchableOpacity
             style={[styles.button, readOnly && styles.buttonDisabled]}

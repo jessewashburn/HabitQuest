@@ -142,7 +142,6 @@ const styles = StyleSheet.create({
   },
   categoryButtonText: {
     fontSize: 14,
-    color: '#495057',
     fontWeight: '500',
   },
   selectedCategoryText: {

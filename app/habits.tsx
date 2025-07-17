@@ -7,6 +7,7 @@ import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api
 import styles from './habits.styles';
 
 export default function HabitsPage() {
+  const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
   // Snackbar modal state
   const [snackbar, setSnackbar] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
@@ -219,19 +220,19 @@ export default function HabitsPage() {
   return (
     <>
       <LinearGradient
-        colors={['#F5EDD8', '#6BA8D6']}
+        colors={colors.gradient}
         start={{ x: 0, y: 1 }}
         end={{ x: 0, y: 0 }}
         style={styles.gradientBackground}
       >
-        <View style={styles.container}>
+        <View style={styles.container}> 
           <View style={styles.narrowContainer}>
             <View style={{ alignItems: 'center', marginBottom: 16 }}>
-              <Text style={styles.title}>Your Habits</Text>
+              <Text style={[styles.title, { color: colors.text }]}>Your Habits</Text>
             </View>
             <TouchableOpacity
               style={{
-                backgroundColor: '#4A6741',
+                backgroundColor: colors.buttonBackground,
                 paddingVertical: 10,
                 paddingHorizontal: 24,
                 borderRadius: 8,
@@ -240,7 +241,7 @@ export default function HabitsPage() {
               }}
               onPress={() => setShowCreateModal(true)}
             >
-              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>New Habit</Text>
+              <Text style={{ color: colors.buttonText, fontSize: 16, fontWeight: 'bold' }}>New Habit</Text>
             </TouchableOpacity>
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -257,7 +258,7 @@ export default function HabitsPage() {
                 >
                   <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
                     <View style={{
-                      backgroundColor: snackbar.type === 'success' ? '#4A6741' : '#d32f2f',
+                      backgroundColor: snackbar.type === 'success' ? colors.buttonBackground : '#d32f2f',
                       padding: 14,
                       borderRadius: 8,
                       marginBottom: 40,
@@ -268,7 +269,7 @@ export default function HabitsPage() {
                       shadowRadius: 8,
                       elevation: 4
                     }}>
-                      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{snackbar.message}</Text>
+                      <Text style={{ color: colors.buttonText, fontWeight: 'bold', fontSize: 16 }}>{snackbar.message}</Text>
                     </View>
                   </View>
                 </Modal>
@@ -282,9 +283,9 @@ export default function HabitsPage() {
           onRequestClose={() => setDeleteConfirm(null)}
         >
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
-            <View style={{ backgroundColor: 'white', padding: 24, borderRadius: 12, alignItems: 'center', minWidth: 260 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>Delete Habit</Text>
-              <Text style={{ fontSize: 16, marginBottom: 24 }}>Are you sure you want to delete "{deleteConfirm.name}"?</Text>
+            <View style={{ backgroundColor: colors.background, padding: 24, borderRadius: 12, alignItems: 'center', minWidth: 260 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12, color: colors.text }}>Delete Habit</Text>
+              <Text style={{ fontSize: 16, marginBottom: 24, color: colors.text }}>Are you sure you want to delete "{deleteConfirm.name}"?</Text>
               <View style={{ flexDirection: 'row', gap: 16 }}>
                 <TouchableOpacity
                   style={{ backgroundColor: '#d32f2f', paddingVertical: 10, paddingHorizontal: 24, borderRadius: 8, marginRight: 8 }}
@@ -314,117 +315,131 @@ export default function HabitsPage() {
               {/* Active Habits */}
               {activeHabits.length > 0 && (
                 <>
-                  <Text style={styles.sectionTitle}>Active Habits</Text>
-                  {activeHabits.map((habit: Habit) => (
-                    <TouchableOpacity 
-                      key={habit.id} 
-                      style={[styles.card]}
-                      onPress={() => handleStatusToggle(habit.id, habit.status)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.habitName}>{habit.name}</Text>
-                        <Text style={styles.category}>
-                          {habit.category && habit.category.name ? habit.category.name : 'No category'}
-                        </Text>
-                        <Text style={styles.meta}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
-                        <Text style={styles.meta}>📊 Status: {habit.status}</Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <TouchableOpacity 
-                          style={[styles.checkbox, { backgroundColor: '#2D4E85' }]}
-                          onPress={() => handleEditHabit(habit)}
-                        >
-                          <Text style={styles.checkmark}>✏️</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                          style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
-                          onPress={() => setDeleteConfirm({ id: habit.id, name: habit.name })}
-                        >
-                          <Text style={styles.checkmark}>🗑️</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Active Habits</Text>
+                  {activeHabits.map((habit: Habit) => {
+                    let cardBg = colors.background;
+                    if (colors.background === '#23272A') cardBg = '#393E46';
+                    return (
+                      <TouchableOpacity 
+                        key={habit.id} 
+                        style={[styles.card, { backgroundColor: cardBg }]}
+                        onPress={() => handleStatusToggle(habit.id, habit.status)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.habitName, { color: colors.text }]}>{habit.name}</Text>
+                          <Text style={[styles.category, { color: colors.text }]}>
+                            {habit.category && habit.category.name ? habit.category.name : 'No category'}
+                          </Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <TouchableOpacity 
+                            style={[styles.checkbox, { backgroundColor: colors.buttonBackground }]}
+                            onPress={() => handleEditHabit(habit)}
+                          >
+                            <Text style={[styles.checkmark, { color: colors.buttonText }]}>✏️</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
+                            onPress={() => setDeleteConfirm({ id: habit.id, name: habit.name })}
+                          >
+                            <Text style={styles.checkmark}>🗑️</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </>
               )}
               {/* Completed Habits */}
               {completedHabits.length > 0 && (
                 <>
-                  <Text style={styles.sectionTitle}>Completed Habits</Text>
-                  {completedHabits.map((habit: Habit) => (
-                    <TouchableOpacity 
-                      key={habit.id} 
-                      style={[styles.card, styles.completedCard]}
-                      onPress={() => handleStatusToggle(habit.id, habit.status)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.habitName, styles.completedText]}>{habit.name}</Text>
-                        <Text style={styles.category}>
-                          {habit.category && habit.category.name ? habit.category.name : 'No category'}
-                        </Text>
-                        <Text style={styles.meta}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
-                        <Text style={styles.meta}>📊 Status: {habit.status}</Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <TouchableOpacity 
-                          style={[styles.checkbox, { backgroundColor: '#2D4E85' }]}
-                          onPress={() => handleEditHabit(habit)}
-                        >
-                          <Text style={styles.checkmark}>✏️</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                          style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
-                          onPress={() => setDeleteConfirm({ id: habit.id, name: habit.name })}
-                        >
-                          <Text style={styles.checkmark}>🗑️</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Completed Habits</Text>
+                  {completedHabits.map((habit: Habit) => {
+                    let cardBg = colors.background;
+                    if (colors.background === '#23272A') cardBg = '#393E46';
+                    else cardBg = '#b6f5c9';
+                    return (
+                      <TouchableOpacity 
+                        key={habit.id} 
+                        style={[styles.card, styles.completedCard, { backgroundColor: cardBg }]}
+                        onPress={() => handleStatusToggle(habit.id, habit.status)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.habitName, styles.completedText, { color: colors.text }]}>{habit.name}</Text>
+                          <Text style={[styles.category, { color: colors.text }]}>
+                            {habit.category && habit.category.name ? habit.category.name : 'No category'}
+                          </Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <TouchableOpacity 
+                            style={[styles.checkbox, { backgroundColor: colors.buttonBackground }]}
+                            onPress={() => handleEditHabit(habit)}
+                          >
+                            <Text style={[styles.checkmark, { color: colors.buttonText }]}>✏️</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
+                            onPress={() => setDeleteConfirm({ id: habit.id, name: habit.name })}
+                          >
+                            <Text style={styles.checkmark}>🗑️</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </>
               )}
               {/* Draft Habits */}
               {draftHabits.length > 0 && (
                 <>
-                  <Text style={styles.sectionTitle}>Draft Habits</Text>
-                  {draftHabits.map((habit: Habit) => (
-                    <TouchableOpacity 
-                      key={habit.id} 
-                      style={[styles.card, styles.draftCard]}
-                      activeOpacity={0.7}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.habitName}>{habit.name}</Text>
-                        <Text style={styles.category}>
-                          {habit.category && habit.category.name ? habit.category.name : 'No category'}
-                        </Text>
-                        <Text style={styles.meta}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
-                        <Text style={styles.meta}>📊 Status: {habit.status}</Text>
-                      </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <TouchableOpacity 
-                          style={[styles.checkbox, { backgroundColor: '#2D4E85' }]}
-                          onPress={() => handleEditHabit(habit)}
-                        >
-                          <Text style={styles.checkmark}>✏️</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                          style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
-                          onPress={() => setDeleteConfirm({ id: habit.id, name: habit.name })}
-                        >
-                          <Text style={styles.checkmark}>🗑️</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Draft Habits</Text>
+                  {draftHabits.map((habit: Habit) => {
+                    let cardBg = colors.background;
+                    if (colors.background === '#23272A') cardBg = '#393E46';
+                    else cardBg = '#f2f2f2';
+                    return (
+                      <TouchableOpacity 
+                        key={habit.id} 
+                        style={[styles.card, styles.draftCard, { backgroundColor: cardBg }]}
+                        activeOpacity={0.7}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.habitName, { color: colors.text }]}>{habit.name}</Text>
+                          <Text style={[styles.category, { color: colors.text }]}>
+                            {habit.category && habit.category.name ? habit.category.name : 'No category'}
+                          </Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <TouchableOpacity 
+                            style={[styles.checkbox, { backgroundColor: colors.buttonBackground }]}
+                            onPress={() => handleEditHabit(habit)}
+                          >
+                            <Text style={[styles.checkmark, { color: colors.buttonText }]}>✏️</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
+                            onPress={() => setDeleteConfirm({ id: habit.id, name: habit.name })}
+                          >
+                            <Text style={styles.checkmark}>🗑️</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </>
               )}
               {habits.length === 0 && (
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>No habits yet!</Text>
-                  <Text style={styles.emptySubtitle}>Start building better habits today.</Text>
+                  <Text style={[styles.emptyTitle, { color: colors.text }]}>No habits yet!</Text>
+                  <Text style={[styles.emptySubtitle, { color: colors.text }]}>Start building better habits today.</Text>
                 </View>
               )}
             </ScrollView>
@@ -438,57 +453,76 @@ export default function HabitsPage() {
         presentationStyle="pageSheet"
       >
         <LinearGradient
-          colors={['#F5EDD8', '#6BA8D6']}
+          colors={colors.gradient}
           start={{ x: 0, y: 1 }}
           end={{ x: 0, y: 0 }}
           style={styles.gradientBackground}
         >
           <View style={styles.container}>
             <View style={styles.narrowContainer}>
-              <Text style={styles.title}>
+              <Text style={[styles.title, { color: colors.text }]}>
                 {editingHabit ? 'Edit Habit' : 'Create New Habit'}
               </Text>
               <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Habit Name (editable for both create and edit) */}
-                <Text style={styles.sectionTitle}>Habit Name</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Habit Name</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: theme === 'dark' ? '#fff' : colors.text, backgroundColor: theme === 'dark' ? '#23272A' : colors.inputBackground, borderColor: colors.border }]}
                   value={formData.name}
                   onChangeText={(text: string) => setFormData(prev => ({ ...prev, name: text }))}
                   placeholder="Enter habit name"
+                  placeholderTextColor={theme === 'dark' ? '#aaa' : colors.placeholder}
                   maxLength={100}
                   editable={true}
                 />
                 {/* Show category and status fields for both create and edit. Show start date only for create. */}
                 <>
                   {/* Category */}
-                  <Text style={styles.sectionTitle}>Category</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Category</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
                     {categories.map((category) => (
                       <TouchableOpacity
                         key={category.id}
-                        style={[styles.categoryButton, formData.categoryId === category.id && styles.selectedCategory]}
+                        style={[styles.categoryButton, formData.categoryId === category.id && styles.selectedCategory, {
+                          backgroundColor: formData.categoryId === category.id
+                            ? colors.buttonBackground
+                            : (theme === 'dark' ? '#e0e0e0' : colors.inputBackground),
+                          borderColor: colors.border
+                        }]}
                         onPress={() => setFormData(prev => ({ ...prev, categoryId: category.id }))}
                       >
-                        <Text style={[styles.categoryButtonText, formData.categoryId === category.id && styles.selectedCategoryText]}>
+                        <Text style={[styles.categoryButtonText, formData.categoryId === category.id && styles.selectedCategoryText, {
+                          color: formData.categoryId === category.id
+                            ? colors.buttonText
+                            : (theme === 'dark' ? '#23272A' : '#000')
+                        }]}> 
                           {category.name}
                         </Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
                   {/* Status */}
-                  <Text style={styles.sectionTitle}>Status</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Status</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
                     {(editingHabit ? ['Draft', 'Active'] : ['Draft', 'Active', 'Completed']).map((status) => (
                       <TouchableOpacity
                         key={status}
-                        style={[styles.categoryButton, formData.status === status && styles.selectedCategory]}
+                        style={[styles.categoryButton, formData.status === status && styles.selectedCategory, {
+                          backgroundColor: formData.status === status
+                            ? colors.buttonBackground
+                            : (theme === 'dark' ? '#e0e0e0' : colors.inputBackground),
+                          borderColor: colors.border
+                        }]}
                         onPress={() => {
                           const newFormData = { ...formData, status: status as 'Active' | 'Draft' | 'Completed' };
                           setFormData(newFormData);
                         }}
                       >
-                        <Text style={[styles.categoryButtonText, formData.status === status && styles.selectedCategoryText]}>
+                        <Text style={[styles.categoryButtonText, formData.status === status && styles.selectedCategoryText, {
+                          color: formData.status === status
+                            ? colors.buttonText
+                            : (theme === 'dark' ? '#23272A' : '#000')
+                        }]}> 
                           {status}
                         </Text>
                       </TouchableOpacity>
@@ -497,12 +531,13 @@ export default function HabitsPage() {
                   {/* Start Date (only for create) */}
                   {!editingHabit && (
                     <>
-                      <Text style={styles.sectionTitle}>Start Date</Text>
+                      <Text style={[styles.sectionTitle, { color: colors.text }]}>Start Date</Text>
                       <TextInput
-                        style={styles.input}
+                        style={[styles.input, { color: theme === 'dark' ? '#fff' : colors.text, backgroundColor: theme === 'dark' ? '#23272A' : colors.inputBackground, borderColor: colors.border }]}
                         value={formData.startDate}
-                        onChangeText={(text: string) => setFormData(prev => ({ ...prev, startDate: text }))}
+                        onChangeText={(text) => setFormData(prev => ({ ...prev, startDate: text }))}
                         placeholder={'YYYY-MM-DD'}
+                        placeholderTextColor={theme === 'dark' ? '#aaa' : colors.placeholder}
                         maxLength={10}
                         editable={true}
                       />
@@ -518,13 +553,13 @@ export default function HabitsPage() {
                       resetForm();
                     }}
                   >
-                    <Text style={[styles.habitName, { color: 'white' }]}>Cancel</Text>
+                    <Text style={[styles.habitName, { color: '#fff' }]}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    style={[styles.card, { flex: 1, alignItems: 'center', backgroundColor: '#4A6741' }]}
+                    style={[styles.card, { flex: 1, alignItems: 'center', backgroundColor: colors.buttonBackground }]}
                     onPress={editingHabit ? handleUpdateHabit : handleCreateHabit}
                   >
-                    <Text style={[styles.habitName, { color: 'white' }]}>
+                    <Text style={[styles.habitName, { color: colors.buttonText }]}> 
                       {editingHabit ? 'Update' : 'Create'}
                     </Text>
                   </TouchableOpacity>
