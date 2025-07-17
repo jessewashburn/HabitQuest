@@ -3,42 +3,61 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { authAPI } from '../services/api';
 import styles from './index.styles';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{email?: string, password?: string, general?: string}>({});
   const { login } = useAuth();
 
-  const handleLogin = async () => {
-    setLoading(true);
-    
-    try {
-      const trimmedUsername = username.trim();
-      const trimmedPassword = password.trim();
-      
-      if (trimmedUsername === 'admin' && trimmedPassword === 'admin') {
-        login(trimmedUsername);
-        router.replace('/home');
-      } else {
-        Alert.alert('Login Failed', 'Invalid credentials. Try admin/admin for testing.');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const clearErrors = () => {
+    setErrors({});
   };
 
-  const handleGuestLogin = async () => {
-    setLoading(true);
+  const handleLogin = async () => {
+    clearErrors();
     
+    // Validation
+    const newErrors: {email?: string, password?: string, general?: string} = {};
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+    }
+    
+    if (!password.trim()) {
+      newErrors.password = 'Password is required';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setLoading(true);
     try {
-      login('Guest');
+      console.log('🔑 Attempting AWS login with real API...');
+      const result = await authAPI.login({ 
+        email: email.trim(), 
+        password: password.trim() 
+      });
+      
+      console.log('✅ Login successful:', result);
+      // Use email as username since backend only returns { message, token }
+      login(email.trim());
       router.replace('/home');
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      Alert.alert('Success', 'Login successful!');
+    } catch (error: any) {
+      console.error('❌ Login failed:', error);
+      console.log('🚨 About to show alert with message:', error.message);
+      setErrors({ general: error.message || 'Invalid credentials' });
     } finally {
       setLoading(false);
     }
@@ -65,22 +84,42 @@ export default function Login() {
         <Text style={styles.subtitle}>Track your habits. Level up your life.</Text>
 
         <View style={styles.formContainer}>
+          {errors.general && (
+            <Text style={styles.errorText}>{errors.general}</Text>
+          )}
+          
           <TextInput
-            placeholder="Username (try: admin)"
-            value={username}
-            onChangeText={setUsername}
-            style={styles.input}
+            placeholder="Email address"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) clearErrors();
+            }}
+            style={[styles.input, errors.email && styles.inputError]}
             autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
             editable={!loading}
           />
+          {errors.email && (
+            <Text style={styles.errorText}>{errors.email}</Text>
+          )}
+          
           <TextInput
-            placeholder="Password (try: admin)"
+            placeholder="Password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) clearErrors();
+            }}
             secureTextEntry
-            style={styles.input}
+            style={[styles.input, errors.password && styles.inputError]}
+            autoComplete="password"
             editable={!loading}
           />
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
 
           <Pressable
             style={[styles.button, styles.primaryButton, loading && styles.buttonDisabled]}
@@ -89,16 +128,6 @@ export default function Login() {
           >
             <Text style={styles.buttonText}>
               {loading ? 'Signing In...' : 'Login'}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[styles.button, styles.secondaryButton]}
-            onPress={handleGuestLogin}
-            disabled={loading}
-          >
-            <Text style={styles.secondaryButtonText}>
-              {loading ? 'Signing In...' : 'Continue as Guest'}
             </Text>
           </Pressable>
 

@@ -142,6 +142,24 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: '#2D4E85',
   },
+  searchResults: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  searchHint: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
+  },
+  highlightedText: {
+    backgroundColor: '#ffeb3b',
+    fontWeight: 'bold',
+    color: '#1976d2',
+  },
 });
 
 export default styles;
