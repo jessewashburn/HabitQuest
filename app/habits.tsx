@@ -38,12 +38,12 @@ export default function HabitsPage() {
   const [formData, setFormData] = useState({
     name: '',
     categoryId: '',
-    status: 'Draft' as 'Active' | 'Draft' | 'Completed' | 'Cancelled' | 'Deleted',
+    status: 'Draft' as 'Active' | 'Draft' | 'Completed',
     startDate: ''
   });
 
-  const activeHabits = getActiveHabits();
-  const draftHabits = getDraftHabits();
+  const activeHabits = habits.filter(h => h.status === 'Active');
+  const draftHabits = habits.filter(h => h.status === 'Draft');
   const completedHabits = habits.filter(h => h.status === 'Completed');
 
   // Load categories on component mount
@@ -109,7 +109,13 @@ export default function HabitsPage() {
     }
 
     try {
-      await updateHabit(editingHabit.id, { name: formData.name.trim() });
+      // Update name, status, and startDate
+      const updateData: UpdateHabitData = {
+        name: formData.name.trim(),
+        status: formData.status,
+        startDate: formData.startDate || undefined
+      };
+      await updateHabit(editingHabit.id, updateData);
       setEditingHabit(null);
       resetForm();
       setSnackbar({ type: 'success', message: 'Habit updated successfully!' });
@@ -147,7 +153,7 @@ export default function HabitsPage() {
     setFormData({
       name: habit.name || '',
       categoryId: habit.category?.id || '',
-      status: habit.status || 'Draft',
+      status: habit.status as 'Active' | 'Draft' | 'Completed',
       startDate: habit.startDate || ''
     });
   };
@@ -387,7 +393,6 @@ export default function HabitsPage() {
                     <TouchableOpacity 
                       key={habit.id} 
                       style={[styles.card, styles.draftCard]}
-                      onPress={() => handleStatusToggle(habit.id, habit.status)}
                       activeOpacity={0.7}
                     >
                       <View style={{ flex: 1 }}>
@@ -405,9 +410,6 @@ export default function HabitsPage() {
                         >
                           <Text style={styles.checkmark}>✏️</Text>
                         </TouchableOpacity>
-                        <View style={styles.checkbox}>
-                          <Text style={styles.checkmark}>📝</Text>
-                        </View>
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -451,71 +453,69 @@ export default function HabitsPage() {
                   maxLength={100}
                   editable={true}
                 />
-                {/* Only show category, status, and start date fields when creating a habit */}
-                {!editingHabit && (
-                  <>
-                    {/* Category */}
-                    <Text style={styles.sectionTitle}>Category</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-                      {categories.map((category) => (
-                        <TouchableOpacity
-                          key={category.id}
-                          style={[
-                            styles.categoryButton,
-                            formData.categoryId === category.id && styles.selectedCategory
-                          ]}
-                          onPress={() => setFormData(prev => ({ ...prev, categoryId: category.id }))}
-                        >
-                          <Text style={[
-                            styles.categoryButtonText,
-                            formData.categoryId === category.id && styles.selectedCategoryText
-                          ]}>
-                            {category.name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                    {/* Status */}
-                    <Text style={styles.sectionTitle}>Status</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-                      {(['Draft', 'Active'] as const).map((status) => (
-                        <TouchableOpacity
-                          key={status}
-                          style={[
-                            styles.categoryButton,
-                            formData.status === status && styles.selectedCategory
-                          ]}
-                          onPress={() => {
-                            const newFormData = { ...formData, status };
-                            // Auto-populate start date for non-Draft status
-                            if (status !== 'Draft' && !formData.startDate) {
-                              newFormData.startDate = new Date().toISOString().split('T')[0];
-                            }
-                            setFormData(newFormData);
-                          }}
-                        >
-                          <Text style={[
-                            styles.categoryButtonText,
-                            formData.status === status && styles.selectedCategoryText
-                          ]}>
-                            {status}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                    {/* Start Date */}
-                    <Text style={styles.sectionTitle}>
-                      Start Date {formData.status !== 'Draft' ? '(Required for Active/Completed)' : '(Optional)'}
-                    </Text>
-                    <TextInput
-                      style={styles.input}
-                      value={formData.startDate}
-                      onChangeText={(text: string) => setFormData(prev => ({ ...prev, startDate: text }))}
-                      placeholder={formData.status !== 'Draft' ? 'YYYY-MM-DD (Required)' : 'YYYY-MM-DD (Optional)'}
-                      maxLength={10}
-                    />
-                  </>
-                )}
+                {/* Show category, status, and start date fields for both create and edit */}
+                <>
+                  {/* Category */}
+                  <Text style={styles.sectionTitle}>Category</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                    {categories.map((category) => (
+                      <TouchableOpacity
+                        key={category.id}
+                        style={[
+                          styles.categoryButton,
+                          formData.categoryId === category.id && styles.selectedCategory
+                        ]}
+                        onPress={() => setFormData(prev => ({ ...prev, categoryId: category.id }))}
+                      >
+                        <Text style={[
+                          styles.categoryButtonText,
+                          formData.categoryId === category.id && styles.selectedCategoryText
+                        ]}>
+                          {category.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  {/* Status */}
+                  <Text style={styles.sectionTitle}>Status</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                    {(['Draft', 'Active', 'Completed'] as const).map((status) => (
+                      <TouchableOpacity
+                        key={status}
+                        style={[
+                          styles.categoryButton,
+                          formData.status === status && styles.selectedCategory
+                        ]}
+                        onPress={() => {
+                          const newFormData = { ...formData, status };
+                          // Auto-populate start date for non-Draft status
+                          if (status !== 'Draft' && !formData.startDate) {
+                            newFormData.startDate = new Date().toISOString().split('T')[0];
+                          }
+                          setFormData(newFormData);
+                        }}
+                      >
+                        <Text style={[
+                          styles.categoryButtonText,
+                          formData.status === status && styles.selectedCategoryText
+                        ]}>
+                          {status}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  {/* Start Date */}
+                  <Text style={styles.sectionTitle}>
+                    Start Date {formData.status !== 'Draft' ? '(Required for Active/Completed)' : '(Optional)'}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formData.startDate}
+                    onChangeText={(text: string) => setFormData(prev => ({ ...prev, startDate: text }))}
+                    placeholder={formData.status !== 'Draft' ? 'YYYY-MM-DD (Required)' : 'YYYY-MM-DD (Optional)'}
+                    maxLength={10}
+                  />
+                </>
                 {/* Action Buttons */}
                 <View style={{ flexDirection: 'row', gap: 12, marginTop: 24 }}>
                   <TouchableOpacity 
