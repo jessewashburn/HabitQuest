@@ -37,6 +37,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  text: {
+    fontSize: 16,
+    color: '#2D4E85',
+  },
   category: {
     fontStyle: 'italic',
     color: '#555',
@@ -49,11 +53,11 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   completedCard: {
-    backgroundColor: '#d4edda',
+    backgroundColor: '#b6f5c9', // lighter green for better contrast
   },
   completedText: {
     textDecorationLine: 'line-through',
-    color: '#666',
+    color: '#23272A', // dark text for contrast in light/green backgrounds
   },
   checkbox: {
     width: 24,

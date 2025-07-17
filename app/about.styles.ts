@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     lineHeight: 22,
-    color: '#000',
+    color: '#2D4E85',
   },
 });
 
