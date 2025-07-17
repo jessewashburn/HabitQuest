@@ -467,16 +467,10 @@ export default function HabitsPage() {
                     {categories.map((category) => (
                       <TouchableOpacity
                         key={category.id}
-                        style={[
-                          styles.categoryButton,
-                          formData.categoryId === category.id && styles.selectedCategory
-                        ]}
+                        style={[styles.categoryButton, formData.categoryId === category.id && styles.selectedCategory]}
                         onPress={() => setFormData(prev => ({ ...prev, categoryId: category.id }))}
                       >
-                        <Text style={[
-                          styles.categoryButtonText,
-                          formData.categoryId === category.id && styles.selectedCategoryText
-                        ]}>
+                        <Text style={[styles.categoryButtonText, formData.categoryId === category.id && styles.selectedCategoryText]}>
                           {category.name}
                         </Text>
                       </TouchableOpacity>
@@ -488,19 +482,13 @@ export default function HabitsPage() {
                     {(editingHabit ? ['Draft', 'Active'] : ['Draft', 'Active', 'Completed']).map((status) => (
                       <TouchableOpacity
                         key={status}
-                        style={[
-                          styles.categoryButton,
-                          formData.status === status && styles.selectedCategory
-                        ]}
+                        style={[styles.categoryButton, formData.status === status && styles.selectedCategory]}
                         onPress={() => {
                           const newFormData = { ...formData, status: status as 'Active' | 'Draft' | 'Completed' };
                           setFormData(newFormData);
                         }}
                       >
-                        <Text style={[
-                          styles.categoryButtonText,
-                          formData.status === status && styles.selectedCategoryText
-                        ]}>
+                        <Text style={[styles.categoryButtonText, formData.status === status && styles.selectedCategoryText]}>
                           {status}
                         </Text>
                       </TouchableOpacity>
