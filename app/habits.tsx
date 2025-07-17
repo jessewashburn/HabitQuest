@@ -410,6 +410,12 @@ export default function HabitsPage() {
                         >
                           <Text style={styles.checkmark}>✏️</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.checkbox, { backgroundColor: '#d32f2f' }]}
+                          onPress={() => setDeleteConfirm({ id: habit.id, name: habit.name })}
+                        >
+                          <Text style={styles.checkmark}>🗑️</Text>
+                        </TouchableOpacity>
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -453,7 +459,7 @@ export default function HabitsPage() {
                   maxLength={100}
                   editable={true}
                 />
-                {/* Show category, status, and start date fields for both create and edit */}
+                {/* Show category and status fields for both create and edit. Show start date only for create. */}
                 <>
                   {/* Category */}
                   <Text style={styles.sectionTitle}>Category</Text>
@@ -479,7 +485,7 @@ export default function HabitsPage() {
                   {/* Status */}
                   <Text style={styles.sectionTitle}>Status</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-                    {(['Draft', 'Active', 'Completed'] as const).map((status) => (
+                    {(editingHabit ? ['Draft', 'Active'] : ['Draft', 'Active', 'Completed']).map((status) => (
                       <TouchableOpacity
                         key={status}
                         style={[
@@ -487,11 +493,7 @@ export default function HabitsPage() {
                           formData.status === status && styles.selectedCategory
                         ]}
                         onPress={() => {
-                          const newFormData = { ...formData, status };
-                          // Auto-populate start date for non-Draft status
-                          if (status !== 'Draft' && !formData.startDate) {
-                            newFormData.startDate = new Date().toISOString().split('T')[0];
-                          }
+                          const newFormData = { ...formData, status: status as 'Active' | 'Draft' | 'Completed' };
                           setFormData(newFormData);
                         }}
                       >
@@ -504,17 +506,20 @@ export default function HabitsPage() {
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
-                  {/* Start Date */}
-                  <Text style={styles.sectionTitle}>
-                    Start Date {formData.status !== 'Draft' ? '(Required for Active/Completed)' : '(Optional)'}
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.startDate}
-                    onChangeText={(text: string) => setFormData(prev => ({ ...prev, startDate: text }))}
-                    placeholder={formData.status !== 'Draft' ? 'YYYY-MM-DD (Required)' : 'YYYY-MM-DD (Optional)'}
-                    maxLength={10}
-                  />
+                  {/* Start Date (only for create) */}
+                  {!editingHabit && (
+                    <>
+                      <Text style={styles.sectionTitle}>Start Date</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={formData.startDate}
+                        onChangeText={(text: string) => setFormData(prev => ({ ...prev, startDate: text }))}
+                        placeholder={'YYYY-MM-DD'}
+                        maxLength={10}
+                        editable={true}
+                      />
+                    </>
+                  )}
                 </>
                 {/* Action Buttons */}
                 <View style={{ flexDirection: 'row', gap: 12, marginTop: 24 }}>
