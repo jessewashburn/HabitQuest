@@ -24,7 +24,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   linkHover: {
-    backgroundColor: '#ddd',
+    // backgroundColor will be set inline based on theme
+    backgroundColor: undefined,
   },
   linkText: {
     fontSize: 16,

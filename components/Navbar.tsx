@@ -5,7 +5,7 @@ import { Modal, Pressable, Text, TouchableOpacity, View, useWindowDimensions } f
 import { styles } from './navbar.styles';
 
 export default function Navbar() {
-  const { colors } = useTheme();
+  const { theme, colors } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const { width } = useWindowDimensions();
   const router = useRouter();
@@ -43,20 +43,70 @@ export default function Navbar() {
         </>
       ) : (
         <>
-          <Pressable onPress={() => router.push('/')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
-            <Text style={[styles.linkText, { color: colors.text }]}>Home</Text>
+          <Pressable
+            onPress={() => router.push('/')}
+            style={({ hovered }) => [
+              styles.link,
+              hovered && {
+                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
+              },
+            ]}
+          >
+            {({ hovered }) => (
+              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Home</Text>
+            )}
           </Pressable>
-          <Pressable onPress={() => router.push('/habits')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
-            <Text style={[styles.linkText, { color: colors.text }]}>Habits</Text>
+          <Pressable
+            onPress={() => router.push('/habits')}
+            style={({ hovered }) => [
+              styles.link,
+              hovered && {
+                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
+              },
+            ]}
+          >
+            {({ hovered }) => (
+              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Habits</Text>
+            )}
           </Pressable>
-          <Pressable onPress={() => router.push('/friends')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
-            <Text style={[styles.linkText, { color: colors.text }]}>Friends</Text>
+          <Pressable
+            onPress={() => router.push('/friends')}
+            style={({ hovered }) => [
+              styles.link,
+              hovered && {
+                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
+              },
+            ]}
+          >
+            {({ hovered }) => (
+              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Friends</Text>
+            )}
           </Pressable>
-          <Pressable onPress={() => router.push('/about')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
-            <Text style={[styles.linkText, { color: colors.text }]}>About</Text>
+          <Pressable
+            onPress={() => router.push('/about')}
+            style={({ hovered }) => [
+              styles.link,
+              hovered && {
+                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
+              },
+            ]}
+          >
+            {({ hovered }) => (
+              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>About</Text>
+            )}
           </Pressable>
-          <Pressable onPress={() => router.push('/profile')} style={({ hovered }) => [styles.link, hovered && styles.linkHover]}>
-            <Text style={[styles.linkText, { color: colors.text }]}>Profile</Text>
+          <Pressable
+            onPress={() => router.push('/profile')}
+            style={({ hovered }) => [
+              styles.link,
+              hovered && {
+                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
+              },
+            ]}
+          >
+            {({ hovered }) => (
+              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Profile</Text>
+            )}
           </Pressable>
         </>
       )}
