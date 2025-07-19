@@ -50,8 +50,18 @@ export default function Login() {
       });
       
       console.log('✅ Login successful:', result);
-      // Use email as username since backend only returns { message, token }
-      login(email.trim());
+      
+      // Decode the JWT token to get the user data
+      // The token payload contains { id: user.id, email: user.email }
+      const tokenPayload = JSON.parse(atob(result.token.split('.')[1]));
+      
+      const userData = {
+        id: tokenPayload.id,
+        email: tokenPayload.email,
+        username: tokenPayload.email.split('@')[0] // Use email prefix as username
+      };
+      
+      login(userData);
       router.replace('/home');
       Alert.alert('Success', 'Login successful!');
     } catch (error: any) {

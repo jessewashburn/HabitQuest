@@ -6,7 +6,7 @@ import styles from './index.styles';
 
 export default function Home() {
   const { user } = useAuth();
-  const { getCompletedHabits, getDueHabits } = useHabits();
+  const { getCompletedHabits, getDueHabits, loading, error } = useHabits();
   
   const completedHabits = getCompletedHabits();
   const dueHabits = getDueHabits();
@@ -28,28 +28,40 @@ export default function Home() {
         <Text style={styles.subtitle}>Level Up Your Life – One Habit at a Time</Text>
         
         <View style={styles.statsContainer}>
-          <Text style={styles.statsText}>
-            Today's Progress: {completedHabits.length}/{completedHabits.length + dueHabits.length} habits completed
-          </Text>
+          {loading ? (
+            <Text style={styles.statsText}>Loading your habits...</Text>
+          ) : error ? (
+            <Text style={styles.statsText}>Error loading habits</Text>
+          ) : (
+            <Text style={styles.statsText}>
+              Today's Progress: {completedHabits.length}/{completedHabits.length + dueHabits.length} habits completed
+            </Text>
+          )}
         </View>
 
         <View style={styles.sectionsContainer}>
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>📋 Due Today</Text>
-            {dueHabits.map((habit, index) => (
-              <Text key={index} style={styles.habitItem}>{habit.name}</Text>
-            ))}
-            {dueHabits.length === 0 && (
+            {loading ? (
+              <Text style={styles.habitItem}>Loading...</Text>
+            ) : dueHabits.length > 0 ? (
+              dueHabits.map((habit, index) => (
+                <Text key={habit.id || index} style={styles.habitItem}>{habit.name}</Text>
+              ))
+            ) : (
               <Text style={styles.habitItem}>All habits completed! 🎉</Text>
             )}
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>✅ Completed Today</Text>
-            {completedHabits.map((habit, index) => (
-              <Text key={index} style={styles.habitItem}>{habit.name}</Text>
-            ))}
-            {completedHabits.length === 0 && (
+            {loading ? (
+              <Text style={styles.habitItem}>Loading...</Text>
+            ) : completedHabits.length > 0 ? (
+              completedHabits.map((habit, index) => (
+                <Text key={habit.id || index} style={styles.habitItem}>{habit.name}</Text>
+              ))
+            ) : (
               <Text style={styles.habitItem}>No habits completed yet today</Text>
             )}
           </View>
