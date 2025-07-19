@@ -43,9 +43,24 @@ export default function HabitsPage() {
     startDate: ''
   });
 
-  const activeHabits = habits.filter(h => h.status === 'Active');
-  const draftHabits = habits.filter(h => h.status === 'Draft');
-  const completedHabits = habits.filter(h => h.status === 'Completed');
+  // Sorting: alphabetically, completed at bottom, then by points descending (if present)
+  function sortHabitsForDisplay(arr: Habit[]) {
+    return [...arr].sort((a, b) => {
+      // 1. Alphabetical by name
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      // 2. Completed at bottom (if status exists)
+      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
+      if (a.status !== 'Completed' && b.status === 'Completed') return -1;
+      return 0;
+    });
+  }
+
+  const activeHabits = sortHabitsForDisplay(habits.filter(h => h.status === 'Active'));
+  const draftHabits = sortHabitsForDisplay(habits.filter(h => h.status === 'Draft'));
+  const completedHabits = sortHabitsForDisplay(habits.filter(h => h.status === 'Completed'));
 
   // Load categories on component mount
   useEffect(() => {
