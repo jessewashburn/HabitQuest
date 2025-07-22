@@ -1,22 +1,18 @@
+import { FriendProfileView } from '@/components/FriendProfileView';
 import { useTheme } from '@/hooks/ThemeContext';
+import { friendsAPI } from '@/services/api/friends';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './friends.styles';
 
-// Test user data
-const TEST_USERS = [
-  { id: '1', name: 'Sam', isFriend: true },
-  { id: '2', name: 'Jesse', isFriend: false },
-  { id: '3', name: 'Harrison', isFriend: true },
-  { id: '4', name: 'Mo', isFriend: false },
-  { id: '5', name: 'Jeffrey', isFriend: false },
-  { id: '6', name: 'Alexandra', isFriend: false },
-  { id: '7', name: 'Michael', isFriend: true },
-  { id: '8', name: 'Catherine', isFriend: false },
-  { id: '9', name: 'Christopher', isFriend: false },
-  { id: '10', name: 'Stephanie', isFriend: true },
-];
+// User state: fetched from API
+type UserListItem = {
+  id: string;
+  name: string;
+  isFriend: boolean;
+};
 
 // Custom fuzzy search function
 function fuzzySearch(query: string, text: string): number {
@@ -88,54 +84,122 @@ function highlightMatch(text: string, query: string): { text: string; isHighligh
 export default function FriendsScreen() {
   const { colors } = useTheme();
   const [search, setSearch] = useState('');
-  const [users, setUsers] = useState(TEST_USERS);
+  const [users, setUsers] = useState<UserListItem[]>([]);
   const [confirmUnfriend, setConfirmUnfriend] = useState<{ id: string; name: string } | null>(null);
-  const [profilePopup, setProfilePopup] = useState<string | null>(null);
+  const [profilePopup, setProfilePopup] = useState<{ id: string; name: string } | null>(null);
+  const [profileData, setProfileData] = useState<{ username: string; level: number; totalExperience: number } | null>(null);
   const [snackbar, setSnackbar] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Enhanced filtering with custom fuzzy search
-  const filteredUsers = useMemo(() => {
-    if (search.trim().length === 0) {
-      // Show only friends when not searching
-      return users.filter(u => u.isFriend);
-    } else {
-      // Use custom fuzzy search across all users
-      const searchResults = users
-        .map(user => ({
-          user,
-          score: fuzzySearch(search, user.name)
-        }))
-        .filter(result => result.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map(result => result.user);
-      
-      return searchResults;
+  // Use AuthContext for user and token
+  const { user } = useAuth();
+  const currentUserId = user?.id || '';
+  const token = window.localStorage.getItem('authToken') || '';
+
+  // Fetch friends list on mount
+  useEffect(() => {
+    async function fetchFriends() {
+      if (!currentUserId || !token) return;
+      setLoading(true);
+      try {
+        const friends = await friendsAPI.getFriends(currentUserId, token);
+        // Map to UserListItem
+        const friendList: UserListItem[] = friends.map(f => ({
+          id: f.userId === currentUserId ? f.targetUserId : f.userId,
+          name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
+          isFriend: f.type === 'FRIEND',
+        }));
+        setUsers(friendList);
+      } catch (err) {
+        setSnackbar('Failed to load friends');
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [search, users]);
+    fetchFriends();
+  }, [currentUserId, token]);
 
-  // Handlers for add/remove
-  const handleAdd = (id: string) => {
-    setUsers(users =>
-      users.map(u => (u.id === id ? { ...u, isFriend: true } : u))
-    );
-    const user = users.find(u => u.id === id);
-    setSnackbar(`Added ${user?.name} as a friend`);
-  };
-  const handleRemove = (id: string) => {
-    setUsers(users =>
-      users.map(u => (u.id === id ? { ...u, isFriend: false } : u))
-    );
-    const user = users.find(u => u.id === id);
-    setSnackbar(`Removed ${user?.name} from friends`);
-    setConfirmUnfriend(null);
+  // Search users
+  useEffect(() => {
+    if (search.trim().length === 0) return;
+    let active = true;
+    setLoading(true);
+    if (!token) return;
+    friendsAPI.searchUsers(search, token)
+      .then(results => {
+        if (!active) return;
+        // Map search results to UserListItem
+        const searchList: UserListItem[] = results.map((u: any) => ({
+          id: u.id,
+          name: u.username,
+          isFriend: users.some(f => f.id === u.id && f.isFriend),
+        }));
+        setUsers(searchList);
+      })
+      .catch(() => setSnackbar('Search failed'))
+      .finally(() => setLoading(false));
+    return () => { active = false; };
+  }, [search]);
+
+  // Add friend
+  const handleAdd = async (id: string) => {
+    if (!currentUserId || !token) return;
+    setLoading(true);
+    try {
+      await friendsAPI.sendFriendRequest(currentUserId, id, token);
+      setUsers(users => users.map(u => (u.id === id ? { ...u, isFriend: true } : u)));
+      const user = users.find(u => u.id === id);
+      setSnackbar(`Friend request sent to ${user?.name}`);
+    } catch {
+      setSnackbar('Failed to send friend request');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const renderItem = ({ item }: { item: typeof TEST_USERS[0] }) => {
+  // Remove friend
+  const handleRemove = async (id: string) => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      // You need the relationshipId, not just userId. For demo, assume id is relationshipId.
+      await friendsAPI.removeFriend(id, token);
+      setUsers(users => users.map(u => (u.id === id ? { ...u, isFriend: false } : u)));
+      const user = users.find(u => u.id === id);
+      setSnackbar(`Removed ${user?.name} from friends`);
+      setConfirmUnfriend(null);
+    } catch {
+      setSnackbar('Failed to remove friend');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // View profile
+  const handleViewProfile = async (id: string, name: string) => {
+    if (!token) return;
+    setProfilePopup({ id, name });
+    setProfileData(null);
+    setLoading(true);
+    try {
+      const profile = await friendsAPI.getUserProfile(id, token);
+      setProfileData({
+        username: profile.user.username,
+        level: profile.levels?.totalLevel || 0,
+        totalExperience: profile.experience?.totalExperience || 0,
+      });
+    } catch {
+      setSnackbar('Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderItem = ({ item }: { item: UserListItem }) => {
     const highlightedName = highlightMatch(item.name, search);
-    
     return (
       <View style={styles.friendRow}>
-        <TouchableOpacity onPress={() => setProfilePopup(item.name)}>
+        <TouchableOpacity onPress={() => handleViewProfile(item.id, item.name)}>
           <Text style={[styles.friendName, styles.friendNameLink]}>
             {highlightedName.map((part, index) => (
               <Text
@@ -149,20 +213,14 @@ export default function FriendsScreen() {
         </TouchableOpacity>
         <View style={styles.buttonGroup}>
           <TouchableOpacity
-            style={[
-              styles.button,
-              item.isFriend ? styles.buttonDisabled : styles.buttonAdd,
-            ]}
+            style={[styles.button, item.isFriend ? styles.buttonDisabled : styles.buttonAdd]}
             disabled={item.isFriend}
             onPress={() => handleAdd(item.id)}
           >
             <Text style={styles.buttonText}>Add</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.button,
-              !item.isFriend ? styles.buttonDisabled : styles.buttonRemove,
-            ]}
+            style={[styles.button, !item.isFriend ? styles.buttonDisabled : styles.buttonRemove]}
             disabled={!item.isFriend}
             onPress={() => setConfirmUnfriend({ id: item.id, name: item.name })}
           >
@@ -205,14 +263,14 @@ export default function FriendsScreen() {
           </View>
           {search.length > 0 && (
             <Text style={styles.searchResults}>
-              {filteredUsers.length} result{filteredUsers.length !== 1 ? 's' : ''} found
-              {filteredUsers.length === 0 && search.length > 0 && (
+              {users.length} result{users.length !== 1 ? 's' : ''} found
+              {users.length === 0 && search.length > 0 && (
                 <Text style={styles.searchHint}> - Try shorter terms or check spelling</Text>
               )}
             </Text>
           )}
           <FlatList
-            data={filteredUsers}
+            data={users}
             keyExtractor={item => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
@@ -254,19 +312,21 @@ export default function FriendsScreen() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              {profilePopup && (
-                <>
-                  <Text style={styles.modalText}>
-                    You clicked {profilePopup}. This will take you to their profile
-                  </Text>
-                  <TouchableOpacity
-                    style={[styles.button, styles.buttonNeutral]}
-                    onPress={() => setProfilePopup(null)}
-                  >
-                    <Text style={styles.buttonText}>OK</Text>
-                  </TouchableOpacity>
-                </>
+              {profilePopup && profileData ? (
+                <FriendProfileView
+                  username={profileData.username}
+                  level={profileData.level}
+                  totalExperience={profileData.totalExperience}
+                />
+              ) : (
+                <Text style={styles.modalText}>Loading profile...</Text>
               )}
+              <TouchableOpacity
+                style={[styles.button, styles.buttonNeutral, { marginTop: 16 }]}
+                onPress={() => setProfilePopup(null)}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
