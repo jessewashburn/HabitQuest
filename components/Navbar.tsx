@@ -10,8 +10,9 @@ export default function Navbar() {
   const { width } = useWindowDimensions();
   const router = useRouter();
   const isMobile = width < 480;
+
   return (
-    <View style={[styles.nav, isMobile && styles.navMobile, { backgroundColor: colors.background }]}> 
+    <View style={[styles.nav, isMobile && styles.navMobile, { backgroundColor: colors.background }]}>
       {isMobile ? (
         <>
           <TouchableOpacity onPress={() => setMenuOpen(prev => !prev)}>
@@ -30,6 +31,9 @@ export default function Navbar() {
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/friends'); }}>
                     <Text style={[styles.linkText, { color: colors.text }]}>Friends</Text>
                   </TouchableOpacity>
+                  <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/exp'); }}>
+                    <Text style={[styles.linkText, { color: colors.text }]}>EXP</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/about'); }}>
                     <Text style={[styles.linkText, { color: colors.text }]}>About</Text>
                   </TouchableOpacity>
@@ -43,67 +47,32 @@ export default function Navbar() {
         </>
       ) : (
         <>
-          <Pressable
-            onPress={() => router.push('/')}
-            style={({ hovered }) => [
-              styles.link,
-              hovered && {
-                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
-              },
-            ]}
-          >
+          <Pressable onPress={() => router.push('/')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>
             {({ hovered }) => (
               <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Home</Text>
             )}
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/habits')}
-            style={({ hovered }) => [
-              styles.link,
-              hovered && {
-                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
-              },
-            ]}
-          >
+          <Pressable onPress={() => router.push('/habits')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>
             {({ hovered }) => (
               <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Habits</Text>
             )}
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/friends')}
-            style={({ hovered }) => [
-              styles.link,
-              hovered && {
-                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
-              },
-            ]}
-          >
+          <Pressable onPress={() => router.push('/friends')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>
             {({ hovered }) => (
               <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Friends</Text>
             )}
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/about')}
-            style={({ hovered }) => [
-              styles.link,
-              hovered && {
-                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
-              },
-            ]}
-          >
+          <Pressable onPress={() => router.push('/exp')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>
+            {({ hovered }) => (
+              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>EXP</Text>
+            )}
+          </Pressable>
+          <Pressable onPress={() => router.push('/about')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>
             {({ hovered }) => (
               <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>About</Text>
             )}
           </Pressable>
-          <Pressable
-            onPress={() => router.push('/profile')}
-            style={({ hovered }) => [
-              styles.link,
-              hovered && {
-                backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0',
-              },
-            ]}
-          >
+          <Pressable onPress={() => router.push('/profile')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>
             {({ hovered }) => (
               <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Profile</Text>
             )}
