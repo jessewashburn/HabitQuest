@@ -82,3 +82,4 @@ export default function Navbar() {
     </View>
   );
 }
+ 
