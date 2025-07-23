@@ -1,40 +1,50 @@
-// app/exp.tsx
-
+import { useTheme } from '@/hooks/ThemeContext';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
-export default function ExpPage() {
-  // Placeholder data (replace with real context or API later)
-  const totalExp = 1520;
-  const categoryExp = {
-    Health: 620,
-    Productivity: 500,
-    Mindfulness: 400,
+export default function EXPPage() {
+  const { theme, colors } = useTheme();
+
+  const expData = {
+    totalExp: 1250,
+    categoryExp: {
+      Fitness: 700,
+      Mindfulness: 350,
+      Productivity: 200,
+    },
+    streakLength: 12 ,
   };
-  const streakLength = 12; // days
+
+  const lightBackground = '#e7f0f9'; // matches logo's soft blue background
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>🎖️ My EXP</Text>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: theme === 'dark' ? colors.background : lightBackground },
+      ]}
+    >
+      <Text style={[styles.header, { color: colors.text }]}>
+        Experience Points
+      </Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Total EXP</Text>
-        <Text style={styles.value}>{totalExp}</Text>
+      <View style={[styles.card, { backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff' }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Total EXP</Text>
+        <Text style={[styles.value, { color: '#0066cc' }]}>{expData.totalExp}</Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Category EXP</Text>
-        {Object.entries(categoryExp).map(([category, exp]) => (
-          <View key={category} style={styles.categoryRow}>
-            <Text style={styles.category}>{category}</Text>
-            <Text style={styles.exp}>{exp}</Text>
-          </View>
+      <View style={[styles.card, { backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff' }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Category EXP</Text>
+        {Object.entries(expData.categoryExp).map(([category, value]) => (
+          <Text key={category} style={[styles.categoryLine, { color: '#333' }]}>
+            {category}: {value}
+          </Text>
         ))}
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>🔥 Streak Length</Text>
-        <Text style={styles.value}>{streakLength} days</Text>
+      <View style={[styles.card, { backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff' }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Streak Length 🔥</Text>
+        <Text style={[styles.value, { color: '#f4b400' }]}>{expData.streakLength} Days</Text>
       </View>
     </ScrollView>
   );
@@ -42,50 +52,36 @@ export default function ExpPage() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    backgroundColor: '#f0f4ff',
-    flexGrow: 1,
+    padding: 20,
+    minHeight: '100%',
   },
-  title: {
+  header: {
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#1f3c88',
   },
   card: {
-    backgroundColor: '#ffffff',
-    padding: 16,
     borderRadius: 12,
+    padding: 16,
     marginBottom: 20,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
-  label: {
+  title: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 8,
-    color: '#1f3c88',
+    marginBottom: 10,
   },
   value: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
   },
-  categoryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  category: {
+  categoryLine: {
     fontSize: 16,
-    color: '#444',
+    marginBottom: 4,
   },
-  exp: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f3c88',
-  },
-}); 
+});
