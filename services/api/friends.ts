@@ -89,15 +89,18 @@ export const friendsAPI = {
     });
   },
 
-  async searchUsers(query: string, token: string): Promise<any[]> {
-    if (!token) throw new Error('token is required');
-    const endpoint = `/api/users?search=${encodeURIComponent(query)}`;
-    console.log('[FriendsAPI] searchUsers:', { endpoint, token });
-    return await makeRequest(endpoint, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+  /**
+   * Search for users. Supports search, friendsonly, and userId params.
+   * @param query The search string
+   * @param options Optional: { friendsonly?: boolean, userId?: string }
+   */
+  async searchUsers(query: string, options?: { friendsonly?: boolean, userId?: string }): Promise<any[]> {
+    let endpoint = `/api/users/users?search=${encodeURIComponent(query)}`;
+    if (options?.friendsonly && options.userId) {
+      endpoint += `&friendsonly=true&userId=${encodeURIComponent(options.userId)}`;
+    }
+    console.log('[FriendsAPI] searchUsers:', { endpoint });
+    return await makeRequest(endpoint);
   },
 
   async sendFriendRequest(userId: string, targetUserId: string, token: string): Promise<FriendRequest> {

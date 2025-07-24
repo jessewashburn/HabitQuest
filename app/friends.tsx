@@ -125,7 +125,7 @@ export default function FriendsScreen() {
     let active = true;
     setLoading(true);
     if (!token) return;
-    friendsAPI.searchUsers(search, token)
+    friendsAPI.searchUsers(search, { userId: currentUserId })
       .then(results => {
         if (!active) return;
         // Map search results to UserListItem
