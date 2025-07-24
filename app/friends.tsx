@@ -1,9 +1,8 @@
-import { FriendProfileView } from '@/components/FriendProfileView';
 import { useTheme } from '@/hooks/ThemeContext';
 import { friendsAPI } from '@/services/api/friends';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './friends.styles';
 
@@ -94,7 +93,7 @@ export default function FriendsScreen() {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [confirmUnfriend, setConfirmUnfriend] = useState<{ id: string; name: string } | null>(null);
   const [profilePopup, setProfilePopup] = useState<{ id: string; name: string } | null>(null);
-  const [profileData, setProfileData] = useState<{ username: string; level: number; totalExperience: number } | null>(null);
+  const [profileData, setProfileData] = useState<{ username: string; level: number; totalExperience: number; profileImage?: string } | null>(null);
   const [snackbar, setSnackbar] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -256,6 +255,7 @@ export default function FriendsScreen() {
         username: profile.user.username,
         level: profile.levels?.totalLevel || 0,
         totalExperience: profile.experience?.totalExperience || 0,
+        profileImage: profile.user.profileImage || undefined,
       });
     } catch {
       setSnackbar('Failed to load profile');
@@ -398,19 +398,31 @@ export default function FriendsScreen() {
           animationType="fade"
           onRequestClose={() => setProfilePopup(null)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <View style={styles.profileModalOverlay}> 
+            <View style={[styles.profileModalContent, { backgroundColor: colors.background }]}> 
               {profilePopup && profileData ? (
-                <FriendProfileView
-                  username={profileData.username}
-                  level={profileData.level}
-                  totalExperience={profileData.totalExperience}
-                />
+                <>
+                  <View style={styles.profileModalAvatarContainer}>
+                    <Image
+                      source={{ uri: profileData.profileImage || 'https://static.vecteezy.com/system/resources/previews/000/574/512/original/vector-sign-of-user-icon.jpg' }}
+                      style={styles.profileModalAvatarImage}
+                    />
+                  </View>
+                  <Text style={[styles.profileModalUsername, { color: colors.text }]}>{profileData.username}</Text>
+                  <View style={styles.profileModalRow}>
+                    <Text style={[styles.profileModalLabel, { color: colors.text }]}>Level</Text>
+                    <Text style={[styles.profileModalValue, { color: colors.text }]}>{profileData.level}</Text>
+                  </View>
+                  <View style={styles.profileModalRow}>
+                    <Text style={[styles.profileModalLabel, { color: colors.text }]}>XP</Text>
+                    <Text style={[styles.profileModalValue, { color: colors.text }]}>{profileData.totalExperience}</Text>
+                  </View>
+                </>
               ) : (
-                <Text style={styles.modalText}>Loading profile...</Text>
+                <Text style={styles.modalText}>Loading...</Text>
               )}
               <TouchableOpacity
-                style={[styles.button, styles.buttonNeutral, { marginTop: 16 }]}
+                style={[styles.button, styles.buttonNeutral, styles.profileModalCloseButton]}
                 onPress={() => setProfilePopup(null)}
               >
                 <Text style={styles.buttonText}>Close</Text>
