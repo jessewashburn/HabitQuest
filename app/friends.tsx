@@ -2,7 +2,7 @@ import { FriendProfileView } from '@/components/FriendProfileView';
 import { useTheme } from '@/hooks/ThemeContext';
 import { friendsAPI } from '@/services/api/friends';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import styles from './friends.styles';
@@ -14,7 +14,36 @@ type UserListItem = {
   isFriend: boolean;
 };
 
-// Custom fuzzy search function
+// Damerau-Levenshtein distance-based fuzzy search
+function damerauLevenshtein(a: string, b: string): number {
+  const alen = a.length;
+  const blen = b.length;
+  if (alen === 0) return blen;
+  if (blen === 0) return alen;
+  const dp = Array.from({ length: alen + 1 }, () => new Array(blen + 1).fill(0));
+  for (let i = 0; i <= alen; i++) dp[i][0] = i;
+  for (let j = 0; j <= blen; j++) dp[0][j] = j;
+  for (let i = 1; i <= alen; i++) {
+    for (let j = 1; j <= blen; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,      // deletion
+        dp[i][j - 1] + 1,      // insertion
+        dp[i - 1][j - 1] + cost // substitution
+      );
+      if (
+        i > 1 &&
+        j > 1 &&
+        a[i - 1] === b[j - 2] &&
+        a[i - 2] === b[j - 1]
+      ) {
+        dp[i][j] = Math.min(dp[i][j], dp[i - 2][j - 2] + cost); // transposition
+      }
+    }
+  }
+  return dp[alen][blen];
+}
+
 function fuzzySearch(query: string, text: string): number {
   const normalizedQuery = query.toLowerCase().trim();
   const normalizedText = text.toLowerCase();
@@ -22,37 +51,12 @@ function fuzzySearch(query: string, text: string): number {
   if (normalizedText === normalizedQuery) return 1.0;
   if (normalizedText.startsWith(normalizedQuery)) return 0.95;
   if (normalizedText.includes(normalizedQuery)) return 0.85;
-  const words = normalizedText.split(/\s+/);
-  for (const word of words) {
-    if (word.startsWith(normalizedQuery)) return 0.8;
-  }
-
-  let queryIndex = 0;
-  let textIndex = 0;
-  let matches = 0;
-  let consecutive = 0;
-  let maxConsecutive = 0;
-  
-  while (queryIndex < normalizedQuery.length && textIndex < normalizedText.length) {
-    if (normalizedQuery[queryIndex] === normalizedText[textIndex]) {
-      matches++;
-      consecutive++;
-      maxConsecutive = Math.max(maxConsecutive, consecutive);
-      queryIndex++;
-    } else {
-      consecutive = 0;
-    }
-    textIndex++;
-  }
-  const matchRatio = matches / normalizedQuery.length;
-  const consecutiveBonus = maxConsecutive / normalizedQuery.length;
-  const lengthPenalty = Math.min(1, normalizedQuery.length / normalizedText.length);
-  
-  if (matchRatio < 0.6) return 0;
-  const baseScore = matchRatio * 0.6;
-  const consecutiveScore = consecutiveBonus * 0.3;
-  const lengthScore = lengthPenalty * 0.1;
-  return Math.min(0.75, baseScore + consecutiveScore + lengthScore); // Cap fuzzy matches at 0.75
+  // Damerau-Levenshtein distance for typo tolerance
+  const dist = damerauLevenshtein(normalizedQuery, normalizedText);
+  const maxLen = Math.max(normalizedQuery.length, normalizedText.length);
+  const score = 1 - dist / maxLen;
+  // Only return matches with reasonable similarity
+  return score >= 0.6 ? score : 0;
 }
 
 // Function to highlight matching characters in search results
@@ -85,6 +89,9 @@ export default function FriendsScreen() {
   const { colors } = useTheme();
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<UserListItem[]>([]);
+  const [allUsers, setAllUsers] = useState<UserListItem[]>([]);
+  const [friends, setFriends] = useState<UserListItem[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [confirmUnfriend, setConfirmUnfriend] = useState<{ id: string; name: string } | null>(null);
   const [profilePopup, setProfilePopup] = useState<{ id: string; name: string } | null>(null);
   const [profileData, setProfileData] = useState<{ username: string; level: number; totalExperience: number } | null>(null);
@@ -98,48 +105,98 @@ export default function FriendsScreen() {
 
   // Fetch friends list on mount
   useEffect(() => {
-    async function fetchFriends() {
+    async function fetchFriendsAndRequests() {
       if (!currentUserId || !token) return;
       setLoading(true);
       try {
-        const friends = await friendsAPI.getFriends(currentUserId, token);
+        const [friendsRes, requests] = await Promise.all([
+          friendsAPI.getFriends(currentUserId, token),
+          friendsAPI.getPendingRequests(currentUserId, token)
+        ]);
         // Map to UserListItem
-        const friendList: UserListItem[] = friends.map(f => ({
+        const friendList: UserListItem[] = friendsRes.map(f => ({
           id: f.userId === currentUserId ? f.targetUserId : f.userId,
           name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
           isFriend: f.type === 'FRIEND',
         }));
-        setUsers(friendList);
+        setFriends(friendList);
+        setUsers(friendList); // Only friends shown by default
+        setPendingRequests(requests);
       } catch (err) {
-        setSnackbar('Failed to load friends');
+        setSnackbar('Failed to load friends or requests');
       } finally {
         setLoading(false);
       }
     }
-    fetchFriends();
+    fetchFriendsAndRequests();
   }, [currentUserId, token]);
-
-  // Search users
-  useEffect(() => {
-    if (search.trim().length === 0) return;
-    let active = true;
-    setLoading(true);
+  // Approve friend request
+  const handleApproveRequest = async (relationshipId: string) => {
     if (!token) return;
-    friendsAPI.searchUsers(search, { userId: currentUserId })
+    setLoading(true);
+    try {
+      await friendsAPI.acceptFriendRequest(relationshipId, token);
+      setPendingRequests(requests => requests.filter(r => r.id !== relationshipId));
+      // Optionally, refresh friends list
+      const friends = await friendsAPI.getFriends(currentUserId, token);
+      const friendList: UserListItem[] = friends.map(f => ({
+        id: f.userId === currentUserId ? f.targetUserId : f.userId,
+        name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
+        isFriend: f.type === 'FRIEND',
+      }));
+      setUsers(friendList);
+      setSnackbar('Friend request approved');
+    } catch {
+      setSnackbar('Failed to approve request');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch all users on mount (or when user/token changes), keep in memory
+  useEffect(() => {
+    if (!currentUserId || !token) return;
+    setLoading(true);
+    friendsAPI.searchUsers('', { userId: currentUserId })
       .then(results => {
-        if (!active) return;
-        // Map search results to UserListItem
-        const searchList: UserListItem[] = results.map((u: any) => ({
+        // Filter out the current user from all users
+        const filtered = results.filter((u: any) => u.id !== currentUserId);
+        // Map to UserListItem, isFriend determined by friends list
+        const allUserList: UserListItem[] = filtered.map((u: any) => ({
           id: u.id,
           name: u.username,
-          isFriend: users.some(f => f.id === u.id && f.isFriend),
+          isFriend: false, // will be set in filteredUsers
         }));
-        setUsers(searchList);
+        setAllUsers(allUserList);
       })
-      .catch(() => setSnackbar('Search failed'))
+      .catch(() => setSnackbar('Failed to load users'))
       .finally(() => setLoading(false));
-    return () => { active = false; };
-  }, [search]);
+  }, [currentUserId, token]);
+
+  // Enhanced filtering with custom fuzzy search
+  const filteredUsers = useMemo(() => {
+    if (search.trim().length === 0) {
+      // Show only friends when not searching
+      return friends;
+    } else if (allUsers.length === 0) {
+      // Wait for all users to load
+      return [];
+    } else {
+      // Use custom fuzzy search across all users
+      const searchResults = allUsers
+        .map(user => ({
+          user,
+          score: fuzzySearch(search, user.name)
+        }))
+        .filter(result => result.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(result => ({
+          ...result.user,
+          isFriend: friends.some(f => f.id === result.user.id)
+        }));
+      return searchResults;
+    }
+  }, [search, allUsers, friends]);
 
   // Add friend
   const handleAdd = async (id: string) => {
@@ -147,9 +204,15 @@ export default function FriendsScreen() {
     setLoading(true);
     try {
       await friendsAPI.sendFriendRequest(currentUserId, id, token);
-      setUsers(users => users.map(u => (u.id === id ? { ...u, isFriend: true } : u)));
-      const user = users.find(u => u.id === id);
-      setSnackbar(`Friend request sent to ${user?.name}`);
+      // Update friends and allUsers to reflect new friend status
+      const friendsRes = await friendsAPI.getFriends(currentUserId, token);
+      const friendList: UserListItem[] = friendsRes.map(f => ({
+        id: f.userId === currentUserId ? f.targetUserId : f.userId,
+        name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
+        isFriend: f.type === 'FRIEND',
+      }));
+      setFriends(friendList);
+      setSnackbar('Friend request sent');
     } catch {
       setSnackbar('Failed to send friend request');
     } finally {
@@ -164,9 +227,15 @@ export default function FriendsScreen() {
     try {
       // You need the relationshipId, not just userId. For demo, assume id is relationshipId.
       await friendsAPI.removeFriend(id, token);
-      setUsers(users => users.map(u => (u.id === id ? { ...u, isFriend: false } : u)));
-      const user = users.find(u => u.id === id);
-      setSnackbar(`Removed ${user?.name} from friends`);
+      // Update friends and allUsers to reflect new friend status
+      const friendsRes = await friendsAPI.getFriends(currentUserId, token);
+      const friendList: UserListItem[] = friendsRes.map(f => ({
+        id: f.userId === currentUserId ? f.targetUserId : f.userId,
+        name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
+        isFriend: f.type === 'FRIEND',
+      }));
+      setFriends(friendList);
+      setSnackbar('Removed from friends');
       setConfirmUnfriend(null);
     } catch {
       setSnackbar('Failed to remove friend');
@@ -242,6 +311,25 @@ export default function FriendsScreen() {
         <View style={styles.narrowContainer}>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Friends</Text>
           <Text style={[styles.text, { color: colors.text }]}>Connect with friends to stay motivated!</Text>
+
+          {/* Friend Requests Section */}
+          {pendingRequests.length > 0 && (
+            <View style={[styles.requestsContainer, { marginBottom: 16 }]}> 
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Friend Requests</Text>
+              {pendingRequests.map(req => (
+                <View key={req.id} style={styles.requestRow}>
+                  <Text style={styles.requestName}>{req.user?.username || 'Unknown User'}</Text>
+                  <TouchableOpacity
+                    style={[styles.button, styles.buttonAdd]}
+                    onPress={() => handleApproveRequest(req.id)}
+                  >
+                    <Text style={styles.buttonText}>Approve</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+
           <View style={styles.searchBarContainer}>
             <TextInput
               style={styles.searchBar}
@@ -263,14 +351,14 @@ export default function FriendsScreen() {
           </View>
           {search.length > 0 && (
             <Text style={styles.searchResults}>
-              {users.length} result{users.length !== 1 ? 's' : ''} found
-              {users.length === 0 && search.length > 0 && (
-                <Text style={styles.searchHint}> - Try shorter terms or check spelling</Text>
-              )}
+          {filteredUsers.length} result{filteredUsers.length !== 1 ? 's' : ''} found
+          {filteredUsers.length === 0 && search.length > 0 && (
+            <Text style={styles.searchHint}> - Try shorter terms or check spelling</Text>
+          )}
             </Text>
           )}
           <FlatList
-            data={users}
+            data={filteredUsers}
             keyExtractor={item => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}

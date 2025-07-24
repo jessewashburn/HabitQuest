@@ -1,6 +1,33 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+  requestsContainer: {
+    backgroundColor: '#f5f7fa',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#2D4E85',
+  },
+  requestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  requestName: {
+    fontSize: 16,
+    color: '#2D4E85',
+    flex: 1,
+  },
   gradientBackground: {
     flex: 1,
   },
