@@ -1,6 +1,12 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+  sectionDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 8,
+    width: '100%',
+  },
   requestsContainer: {
     backgroundColor: '#f5f7fa',
     borderRadius: 10,
@@ -273,6 +279,13 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     resizeMode: 'cover',
+  },
+  requestsSection: {
+    marginTop: 20,
+    marginBottom: 16,
+  },
+    friendRequestName: {
+    paddingLeft: 16,
   },
 });
 

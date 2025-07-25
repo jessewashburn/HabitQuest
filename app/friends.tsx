@@ -91,6 +91,7 @@ export default function FriendsScreen() {
   const [allUsers, setAllUsers] = useState<UserListItem[]>([]);
   const [friends, setFriends] = useState<UserListItem[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [sentRequests, setSentRequests] = useState<string[]>([]); // Track sent friend requests
   const [confirmUnfriend, setConfirmUnfriend] = useState<{ id: string; name: string } | null>(null);
   const [profilePopup, setProfilePopup] = useState<{ id: string; name: string } | null>(null);
   const [profileData, setProfileData] = useState<{ username: string; level: number; totalExperience: number; profileImage?: string } | null>(null);
@@ -136,13 +137,14 @@ export default function FriendsScreen() {
     try {
       await friendsAPI.acceptFriendRequest(relationshipId, token);
       setPendingRequests(requests => requests.filter(r => r.id !== relationshipId));
-      // Optionally, refresh friends list
-      const friends = await friendsAPI.getFriends(currentUserId, token);
-      const friendList: UserListItem[] = friends.map(f => ({
+      // Immediately refresh friends list
+      const friendsRes = await friendsAPI.getFriends(currentUserId, token);
+      const friendList: UserListItem[] = friendsRes.map(f => ({
         id: f.userId === currentUserId ? f.targetUserId : f.userId,
         name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
         isFriend: f.type === 'FRIEND',
       }));
+      setFriends(friendList);
       setUsers(friendList);
       setSnackbar('Friend request approved');
     } catch {
@@ -201,6 +203,7 @@ export default function FriendsScreen() {
   const handleAdd = async (id: string) => {
     if (!currentUserId || !token) return;
     setLoading(true);
+    setSentRequests(prev => [...prev, id]); // Optimistically disable button
     try {
       await friendsAPI.sendFriendRequest(currentUserId, id, token);
       // Update friends and allUsers to reflect new friend status
@@ -214,6 +217,7 @@ export default function FriendsScreen() {
       setSnackbar('Friend request sent');
     } catch {
       setSnackbar('Failed to send friend request');
+      setSentRequests(prev => prev.filter(reqId => reqId !== id)); // Re-enable if failed
     } finally {
       setLoading(false);
     }
@@ -266,6 +270,7 @@ export default function FriendsScreen() {
 
   const renderItem = ({ item }: { item: UserListItem }) => {
     const highlightedName = highlightMatch(item.name, search);
+    const isRequestSent = sentRequests.includes(item.id);
     return (
       <View style={styles.friendRow}>
         <TouchableOpacity onPress={() => handleViewProfile(item.id, item.name)}>
@@ -282,11 +287,11 @@ export default function FriendsScreen() {
         </TouchableOpacity>
         <View style={styles.buttonGroup}>
           <TouchableOpacity
-            style={[styles.button, item.isFriend ? styles.buttonDisabled : styles.buttonAdd]}
-            disabled={item.isFriend}
+            style={[styles.button, (item.isFriend || isRequestSent) ? styles.buttonDisabled : styles.buttonAdd]}
+            disabled={item.isFriend || isRequestSent}
             onPress={() => handleAdd(item.id)}
           >
-            <Text style={styles.buttonText}>Add</Text>
+            <Text style={styles.buttonText}>{isRequestSent ? 'Requested' : 'Add'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, !item.isFriend ? styles.buttonDisabled : styles.buttonRemove]}
@@ -312,24 +317,6 @@ export default function FriendsScreen() {
           <Text style={[styles.pageTitle, { color: colors.text }]}>Friends</Text>
           <Text style={[styles.text, { color: colors.text }]}>Connect with friends to stay motivated!</Text>
 
-          {/* Friend Requests Section */}
-          {pendingRequests.length > 0 && (
-            <View style={[styles.requestsContainer, { marginBottom: 16 }]}> 
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Friend Requests</Text>
-              {pendingRequests.map(req => (
-                <View key={req.id} style={styles.requestRow}>
-                  <Text style={styles.requestName}>{req.user?.username || 'Unknown User'}</Text>
-                  <TouchableOpacity
-                    style={[styles.button, styles.buttonAdd]}
-                    onPress={() => handleApproveRequest(req.id)}
-                  >
-                    <Text style={styles.buttonText}>Approve</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          )}
-
           <View style={styles.searchBarContainer}>
             <TextInput
               style={styles.searchBar}
@@ -349,6 +336,28 @@ export default function FriendsScreen() {
               </TouchableOpacity>
             )}
           </View>
+
+          {pendingRequests.length > 0 && (
+            <View style={styles.requestsSection}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Friend Requests</Text>
+              <View style={styles.sectionDivider} />
+              {pendingRequests.map(req => (
+                <View key={req.id} style={styles.friendRow}>
+                  <Text style={[styles.friendName, styles.friendNameLink, styles.friendRequestName]}> 
+                    {req.user?.username || 'Unknown User'}
+                  </Text>
+                  <View style={styles.buttonGroup}>
+                    <TouchableOpacity
+                      style={[styles.button, styles.buttonAdd]}
+                      onPress={() => handleApproveRequest(req.id)}
+                    >
+                      <Text style={styles.buttonText}>Approve</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
           {search.length > 0 && (
             <Text style={styles.searchResults}>
           {filteredUsers.length} result{filteredUsers.length !== 1 ? 's' : ''} found
@@ -357,6 +366,8 @@ export default function FriendsScreen() {
           )}
             </Text>
           )}
+          <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 24 }]}>My Friends</Text>
+          <View style={styles.sectionDivider} />
           <FlatList
             data={filteredUsers}
             keyExtractor={item => item.id}
