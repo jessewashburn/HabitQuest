@@ -89,11 +89,7 @@ export const friendsAPI = {
     });
   },
 
-  /**
-   * Search for users. Supports search, friendsonly, and userId params.
-   * @param query The search string
-   * @param options Optional: { friendsonly?: boolean, userId?: string }
-   */
+   //Search for users. Supports search, friendsonly, and userId params
   async searchUsers(query: string, options?: { friendsonly?: boolean, userId?: string }): Promise<any[]> {
     let endpoint = `/api/users/users?search=${encodeURIComponent(query)}`;
     if (options?.friendsonly && options.userId) {
