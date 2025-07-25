@@ -8,9 +8,10 @@ import styles from './friends.styles';
 
 // User state: fetched from API
 type UserListItem = {
-  id: string;
+  id: string; // user id
   name: string;
   isFriend: boolean;
+  relationshipId?: string; // needed for unfriend
 };
 
 // Damerau-Levenshtein distance-based fuzzy search
@@ -92,7 +93,7 @@ export default function FriendsScreen() {
   const [friends, setFriends] = useState<UserListItem[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<string[]>([]); // Track sent friend requests
-  const [confirmUnfriend, setConfirmUnfriend] = useState<{ id: string; name: string } | null>(null);
+  const [confirmUnfriend, setConfirmUnfriend] = useState<{ id: string; name: string; relationshipId: string } | null>(null);
   const [profilePopup, setProfilePopup] = useState<{ id: string; name: string } | null>(null);
   const [profileData, setProfileData] = useState<{ username: string; level: number; totalExperience: number; profileImage?: string } | null>(null);
   const [snackbar, setSnackbar] = useState<string | null>(null);
@@ -118,6 +119,7 @@ export default function FriendsScreen() {
           id: f.userId === currentUserId ? f.targetUserId : f.userId,
           name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
           isFriend: f.type === 'FRIEND',
+          relationshipId: f.id,
         }));
         setFriends(friendList);
         setUsers(friendList); // Only friends shown by default
@@ -143,6 +145,7 @@ export default function FriendsScreen() {
         id: f.userId === currentUserId ? f.targetUserId : f.userId,
         name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
         isFriend: f.type === 'FRIEND',
+        relationshipId: f.id,
       }));
       setFriends(friendList);
       setUsers(friendList);
@@ -212,6 +215,7 @@ export default function FriendsScreen() {
         id: f.userId === currentUserId ? f.targetUserId : f.userId,
         name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
         isFriend: f.type === 'FRIEND',
+        relationshipId: f.id,
       }));
       setFriends(friendList);
       setSnackbar('Friend request sent');
@@ -236,8 +240,14 @@ export default function FriendsScreen() {
         id: f.userId === currentUserId ? f.targetUserId : f.userId,
         name: f.userId === currentUserId ? f.targetUser?.username || '' : f.user?.username || '',
         isFriend: f.type === 'FRIEND',
+        relationshipId: f.id,
       }));
       setFriends(friendList);
+      // Update allUsers to include relationshipId for friends
+      setAllUsers(prevAllUsers => prevAllUsers.map(u => {
+        const friend = friendList.find(f => f.id === u.id);
+        return friend ? { ...u, relationshipId: friend.relationshipId } : { ...u, relationshipId: undefined };
+      }));
       setSnackbar('Removed from friends');
       setConfirmUnfriend(null);
     } catch {
@@ -296,7 +306,7 @@ export default function FriendsScreen() {
           <TouchableOpacity
             style={[styles.button, !item.isFriend ? styles.buttonDisabled : styles.buttonRemove]}
             disabled={!item.isFriend}
-            onPress={() => setConfirmUnfriend({ id: item.id, name: item.name })}
+            onPress={() => setConfirmUnfriend({ id: item.id, name: item.name, relationshipId: item.relationshipId! })}
           >
             <Text style={styles.buttonText}>Remove</Text>
           </TouchableOpacity>
@@ -389,7 +399,7 @@ export default function FriendsScreen() {
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={[styles.button, styles.buttonRemove, { marginRight: 16 }]}
-                  onPress={() => handleRemove(confirmUnfriend!.id)}
+                  onPress={() => handleRemove(confirmUnfriend!.relationshipId)}
                 >
                   <Text style={styles.buttonText}>Confirm Unfriend</Text>
                 </TouchableOpacity>
