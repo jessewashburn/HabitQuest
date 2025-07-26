@@ -7,6 +7,27 @@ import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api
 import styles from './habits.styles';
 
 export default function HabitsPage() {
+  const { user } = useAuth();
+  const { 
+    habits, 
+    loading, 
+    error, 
+    createHabit,
+    updateHabit, 
+    deleteHabit,
+    getActiveHabits, 
+    getDraftHabits 
+  } = useHabits();
+  // Ensure habits are only for the current user and starter habits are loaded after registration
+  useEffect(() => {
+    // Load habits for the new user (starter habits seeded by backend)
+    if (user?.id && typeof getActiveHabits === 'function') {
+      getActiveHabits();
+    }
+    if (user?.id && typeof getDraftHabits === 'function') {
+      getDraftHabits();
+    }
+  }, [user?.id]);
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
   // Snackbar modal state
   const [snackbar, setSnackbar] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -19,18 +40,6 @@ export default function HabitsPage() {
       return () => clearTimeout(timer);
     }
   }, [snackbar]);
-  const { 
-    habits, 
-    loading, 
-    error, 
-    createHabit,
-    updateHabit, 
-    deleteHabit,
-    getActiveHabits, 
-    getDraftHabits 
-  } = useHabits();
-  
-  const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
@@ -58,9 +67,9 @@ export default function HabitsPage() {
     });
   }
 
-  const activeHabits = sortHabitsForDisplay(habits.filter(h => h.status === 'Active'));
-  const draftHabits = sortHabitsForDisplay(habits.filter(h => h.status === 'Draft'));
-  const completedHabits = sortHabitsForDisplay(habits.filter(h => h.status === 'Completed'));
+  const activeHabits = sortHabitsForDisplay(habits.filter((h: Habit) => h.status === 'Active'));
+  const draftHabits = sortHabitsForDisplay(habits.filter((h: Habit) => h.status === 'Draft'));
+  const completedHabits = sortHabitsForDisplay(habits.filter((h: Habit) => h.status === 'Completed'));
 
   // Load categories on component mount
   useEffect(() => {
@@ -180,7 +189,7 @@ export default function HabitsPage() {
       const newStatus = currentStatus === 'Active' ? 'Completed' : 'Active';
       
       // Find the habit to get current data
-      const habit = habits.find(h => h.id === habitId);
+      const habit = habits.find((h: Habit) => h.id === habitId);
       if (!habit) return;
       
       // Prepare update data
