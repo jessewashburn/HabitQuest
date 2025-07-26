@@ -32,7 +32,7 @@ export default function Navbar() {
                     <Text style={[styles.linkText, { color: colors.text }]}>Friends</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/exp'); }}>
-                    <Text style={[styles.linkText, { color: colors.text }]}>EXP</Text>
+                    <Text style={[styles.linkText, { color: colors.text }]}>Leaderboard</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.link} onPress={() => { setMenuOpen(false); router.push('/about'); }}>
                     <Text style={[styles.linkText, { color: colors.text }]}>About</Text>
@@ -64,7 +64,7 @@ export default function Navbar() {
           </Pressable>
           <Pressable onPress={() => router.push('/exp')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>
             {({ hovered }) => (
-              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>EXP</Text>
+              <Text style={[styles.linkText, { color: hovered ? (theme === 'dark' ? '#fff' : colors.text) : colors.text }]}>Leaderboard</Text>
             )}
           </Pressable>
           <Pressable onPress={() => router.push('/about')} style={({ hovered }) => [styles.link, hovered && { backgroundColor: theme === 'dark' ? colors.buttonBackground : '#e0e0e0' }]}>

@@ -1,13 +1,13 @@
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/hooks/ThemeContext';
-import { getUserExperience, getUserStreaks } from '@/services/api/experience';
-import { fetchLeaderboard, LeaderboardEntry } from '@/services/api/leaderboard';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../hooks/ThemeContext';
+import { getUserExperience, getUserStreaks } from '../services/api/experience';
+import { fetchLeaderboard, LeaderboardEntry } from '../services/api/leaderboard';
 
-export default function LeaderboardScreen() {
-  const { theme, colors } = useTheme();
+const LeaderboardScreen: React.FC = () => {
+  const { colors, theme } = useTheme();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -17,21 +17,30 @@ export default function LeaderboardScreen() {
 
   useEffect(() => {
     async function fetchData() {
+      console.log('LeaderboardScreen: user', user);
       if (!user) return;
       try {
         const [leaderboardRes, expRes, streakRes] = await Promise.all([
-          fetchLeaderboard(),
+          fetchLeaderboard({ type: 'level-by-user', limit: 10 }),
           getUserExperience(user.id),
           getUserStreaks(user.id)
         ]);
+        console.log('LeaderboardScreen: leaderboardRes', leaderboardRes);
+        console.log('LeaderboardScreen: expRes', expRes);
+        console.log('LeaderboardScreen: streakRes', streakRes);
         setEntries(Array.isArray(leaderboardRes) ? leaderboardRes : []);
-        setExpData(expRes);
-        // Calculate longest active streak from streakRes
-        const activeStreaks = Array.isArray(streakRes.currentStreaks) ? streakRes.currentStreaks : [];
-        const maxStreak = activeStreaks.reduce((max: number, s: any) => Math.max(max, s.count || 0), 0);
+        // For expData, use expRes.totalExperience and expRes.categoryExperience if available
+        setExpData({
+          totalExperience: expRes.totalExperience ?? 0,
+          categoryExperience: expRes.categoryExperience ?? [],
+        });
+        // For streaks, use streakRes.entries or streakRes if array
+        const streakArray = Array.isArray(streakRes.entries) ? streakRes.entries : Array.isArray(streakRes) ? streakRes : [];
+        const maxStreak = streakArray.reduce((max: number, s: any) => Math.max(max, s.streakCount || s.count || 0), 0);
         setStreakLength(maxStreak);
         setLoading(false);
       } catch (err: any) {
+        console.error('LeaderboardScreen: fetchData error', err);
         setError(err.message);
         setLoading(false);
       }
@@ -56,20 +65,30 @@ export default function LeaderboardScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme === 'dark' ? colors.background : '#e7f0f9' }]}> 
-      <Text style={[styles.header, { color: colors.text }]}>Leaderboard</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Leaderboard</Text>
       <Text style={styles.subtitle}>Your EXP & Streaks</Text>
+
+      {/* Debug Info Section */}
+      <View style={[styles.card, { backgroundColor: '#fff', borderColor: '#f00', borderWidth: 1, marginBottom: 10 }]}> 
+        <Text style={{ color: '#f00', fontWeight: 'bold', marginBottom: 4 }}>Debug Info:</Text>
+        <Text style={{ color: '#333', fontSize: 12 }}>User: {JSON.stringify(user)}</Text>
+        <Text style={{ color: '#333', fontSize: 12 }}>EXP Data: {JSON.stringify(expData)}</Text>
+        <Text style={{ color: '#333', fontSize: 12 }}>Entries: {JSON.stringify(entries)}</Text>
+        <Text style={{ color: '#333', fontSize: 12 }}>Streak Length: {streakLength}</Text>
+        <Text style={{ color: '#333', fontSize: 12 }}>Error: {error}</Text>
+      </View>
 
       {!expData ? (
         <ActivityIndicator size="large" color={colors.text} />
       ) : (
         <>
           <View style={[styles.card, { backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff' }]}> 
-            <Text style={[styles.title, { color: colors.text }]}>Total EXP</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Total EXP</Text>
             <Text style={[styles.value, { color: '#0066cc' }]}>{expData.totalExperience}</Text>
           </View>
           <View style={[styles.card, { backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff' }]}> 
-            <Text style={[styles.title, { color: colors.text }]}>Category EXP</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Category EXP</Text>
             {expData.categoryExperience && Object.entries(expData.categoryExperience).map(([category, value]: [string, any]) => (
               <Text key={category} style={[styles.categoryLine, { color: '#333' }]}> 
                 {category}: {value.totalExperience} (Level {value.level})
@@ -77,7 +96,7 @@ export default function LeaderboardScreen() {
             ))}
           </View>
           <View style={[styles.card, { backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff' }]}> 
-            <Text style={[styles.title, { color: colors.text }]}>Longest Active Streak 🔥</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Longest Active Streak 🔥</Text>
             <Text style={[styles.value, { color: '#f4b400' }]}>{streakLength} Days</Text>
           </View>
         </>
@@ -98,20 +117,19 @@ export default function LeaderboardScreen() {
       />
     </ScrollView>
   );
-}
-
+};
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    minHeight: '100%',
+    flex: 1,
+    padding: 24,
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
-  header: {
-    fontSize: 26,
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
@@ -131,7 +149,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     alignSelf: 'center',
   },
-  title: {
+  cardTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 10,
@@ -173,3 +191,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
+export default LeaderboardScreen;
