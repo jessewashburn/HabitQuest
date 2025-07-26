@@ -71,10 +71,28 @@ export default function HabitsPage() {
   const draftHabits = sortHabitsForDisplay(habits.filter((h: Habit) => h.status === 'Draft'));
   const completedHabits = sortHabitsForDisplay(habits.filter((h: Habit) => h.status === 'Completed'));
 
-  // Load categories on component mount
+  // Reset completed habits daily if their startDate is before today
   useEffect(() => {
+    const resetCompletedHabitsDaily = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const habitsToReset = habits.filter(habit => {
+        if (habit.status === 'Completed' && habit.startDate) {
+          // Only reset if startDate is before today
+          return habit.startDate < today;
+        }
+        return false;
+      });
+      for (const habit of habitsToReset) {
+        try {
+          await updateHabit(habit.id, { status: 'Active', startDate: today });
+        } catch (e) {
+          // Optionally handle error
+        }
+      }
+    };
+    resetCompletedHabitsDaily();
     loadCategories();
-  }, []);
+  }, [habits]);
 
   const loadCategories = async () => {
     try {
