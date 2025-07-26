@@ -40,7 +40,6 @@ export default function HabitsPage() {
       return () => clearTimeout(timer);
     }
   }, [snackbar]);
-  // ...existing code...
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
