@@ -151,6 +151,83 @@ const styles = StyleSheet.create({
     color: '#2D4E85',
     textAlign: 'center',
   },
+  // Habit task styles
+  habitTaskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8f9ff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2D4E85',
+  },
+  completedTaskItem: {
+    backgroundColor: '#e8f5e8',
+    borderLeftColor: '#28a745',
+    opacity: 0.7,
+  },
+  habitTaskInfo: {
+    flex: 1,
+  },
+  habitTaskName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  completedTaskName: {
+    textDecorationLine: 'line-through',
+    color: '#666',
+  },
+  habitCategory: {
+    fontSize: 12,
+    color: '#666',
+    textTransform: 'uppercase',
+  },
+  completeButton: {
+    backgroundColor: '#2D4E85',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  completingButton: {
+    backgroundColor: '#5a7bb8',
+  },
+  completeButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  completedBadge: {
+    color: '#28a745',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  // Category level styles
+  categoryLevelItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff4e6',
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#ff9500',
+  },
+  categoryName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  categoryLevel: {
+    fontSize: 12,
+    color: '#666',
+  },
 });
 
 export default styles;

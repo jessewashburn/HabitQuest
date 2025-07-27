@@ -191,6 +191,88 @@ export const usersAPI = {
   }
 };
 
+// User profile types based on the /me endpoint response
+export type UserProfile = {
+  user: {
+    id: string;
+    email: string;
+    username: string;
+    theme: string;
+  };
+  habits: Array<{
+    habitId: string;
+    habitName: string;
+    habitDetails: {
+      id: string;
+      name: string;
+      createdDate: string;
+      startDate: string;
+      userId: string;
+      categoryId: string;
+      status: string;
+      category: {
+        id: string;
+        name: string;
+        active: boolean;
+      };
+    };
+    message: string;
+    habitTask: {
+      id: string;
+      taskDate: string;
+      isCompleted: boolean;
+      completedAt: string | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+    currentStreak: any;
+    allStreaks: any[];
+    created: boolean;
+  }>;
+  levels: {
+    totalLevel: number;
+    totalExperience: number;
+    categoryLevels: any[];
+  };
+  friends: {
+    friends: any[];
+    pendingRequests: any[];
+    sentRequests: any[];
+  };
+  experience: {
+    totalExperience: number;
+    todayExperience: number;
+    categoryBreakdown: any[];
+  };
+};
+
+// Fetch full user profile from /me endpoint
+export async function getUserProfile(userId?: string): Promise<UserProfile> {
+  const token = tokenUtils.getToken();
+  if (!token) throw new Error('No auth token found');
+  
+  // If no userId provided, try to extract from token
+  let userIdToUse = userId;
+  if (!userIdToUse) {
+    try {
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      userIdToUse = tokenPayload.id;
+    } catch (error) {
+      throw new Error('Could not extract user ID from token');
+    }
+  }
+  
+  if (!userIdToUse) {
+    throw new Error('No user ID available for profile request');
+  }
+  
+  return await makeRequest(`/api/users/${userIdToUse}/me`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}
+
 // For backward compatibility
 export const authAPI = usersAPI;
 
