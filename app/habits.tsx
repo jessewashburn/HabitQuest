@@ -1,9 +1,12 @@
+
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { useHabits } from '../contexts/HabitsContext';
 import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api';
+import { habitsAPI } from '../services/api/habits';
+import { getLevelAndExp } from '../services/api/users';
 import styles from './habits.styles';
 
 export default function HabitsPage() {
@@ -18,6 +21,7 @@ export default function HabitsPage() {
     getActiveHabits, 
     getDraftHabits 
   } = useHabits();
+
   // Ensure habits are only for the current user and starter habits are loaded after registration
   useEffect(() => {
     // Load habits for the new user (starter habits seeded by backend)
@@ -205,24 +209,31 @@ export default function HabitsPage() {
     try {
       // Toggle between Active and Completed
       const newStatus = currentStatus === 'Active' ? 'Completed' : 'Active';
-      
-      // Find the habit to get current data
       const habit = habits.find((h: Habit) => h.id === habitId);
       if (!habit) return;
-      
-      // Prepare update data
-      const updateData: UpdateHabitData = { status: newStatus };
-      
-      // Both Active and Completed require a start date according to backend validation
-      if (!habit.startDate) {
-        updateData.startDate = new Date().toISOString().split('T')[0];
+
+      if (newStatus === 'Completed') {
+        // Find today's habit task for this habit
+        const today = new Date().toISOString().split('T')[0];
+        const habitTask = habit.tasks?.find((t: any) => t.date === today);
+        if (habitTask) {
+          await habitsAPI.completeHabitTask(habitTask.id);
+        } else {
+          // fallback: update habit status if no task found
+          await updateHabit(habitId, { status: 'Completed' });
+        }
+        // Fetch updated exp/level and trigger profile refresh
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('refresh-profile-exp'));
+        }
+        if (user?.id) {
+          const expInfo = await getLevelAndExp(user.id);
+          console.log('🎮 Updated User Level/EXP:', expInfo);
+        }
+      } else {
+        // Toggle back to Active
+        await updateHabit(habitId, { status: 'Active' });
       }
-      // If the habit already has a start date, include it to maintain consistency
-      else {
-        updateData.startDate = habit.startDate;
-      }
-      
-      await updateHabit(habitId, updateData);
     } catch (error) {
       console.error('Failed to update habit status:', error);
     }

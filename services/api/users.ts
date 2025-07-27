@@ -193,3 +193,27 @@ export const usersAPI = {
 
 // For backward compatibility
 export const authAPI = usersAPI;
+
+// Fetch level and exp for a user
+export async function getLevelAndExp(userId: string): Promise<{ level: number; exp: number }> {
+  const token = tokenUtils.getToken();
+  if (!token) throw new Error('No auth token found');
+  // Use main API config and request helper
+  const result = await makeRequest(`/api/users/${userId}/me`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  // Support both { levels, experience } and { level, exp }
+  if (result.level !== undefined && result.exp !== undefined) {
+    return { level: result.level, exp: result.exp };
+  }
+  if (result.levels && result.experience) {
+    // friendsAPI.getUserProfile returns levels.totalLevel and experience.totalExperience
+    return {
+      level: result.levels.totalLevel ?? 0,
+      exp: result.experience.totalExperience ?? 0
+    };
+  }
+  throw new Error('Level/exp data not found in backend response');
+}
