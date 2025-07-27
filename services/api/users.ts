@@ -195,25 +195,28 @@ export const usersAPI = {
 export const authAPI = usersAPI;
 
 // Fetch level and exp for a user
-export async function getLevelAndExp(userId: string): Promise<{ level: number; exp: number }> {
+export async function getLevelAndExp(userId: string): Promise<any> {
   const token = tokenUtils.getToken();
   if (!token) throw new Error('No auth token found');
-  // Use main API config and request helper
+  // Use /me endpoint for user info and exp/level aggregation
   const result = await makeRequest(`/api/users/${userId}/me`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
   });
-  // Support both { levels, experience } and { level, exp }
+  // Defensive: add level/exp fields to result for compatibility
   if (result.level !== undefined && result.exp !== undefined) {
-    return { level: result.level, exp: result.exp };
+    result.level = result.level;
+    result.exp = result.exp;
+  } else if (result.totalLevel !== undefined && result.totalExperience !== undefined) {
+    result.level = result.totalLevel;
+    result.exp = result.totalExperience;
+  } else if (result.levels && result.levels.totalLevel !== undefined && result.levels.totalExperience !== undefined) {
+    result.level = result.levels.totalLevel;
+    result.exp = result.levels.totalExperience;
+  } else if (result.experience && result.experience.totalLevel !== undefined && result.experience.totalExperience !== undefined) {
+    result.level = result.experience.totalLevel;
+    result.exp = result.experience.totalExperience;
   }
-  if (result.levels && result.experience) {
-    // friendsAPI.getUserProfile returns levels.totalLevel and experience.totalExperience
-    return {
-      level: result.levels.totalLevel ?? 0,
-      exp: result.experience.totalExperience ?? 0
-    };
-  }
-  throw new Error('Level/exp data not found in backend response');
+  return result;
 }

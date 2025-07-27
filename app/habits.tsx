@@ -209,26 +209,36 @@ export default function HabitsPage() {
     try {
       // Toggle between Active and Completed
       const newStatus = currentStatus === 'Active' ? 'Completed' : 'Active';
+      // Always call /me to ensure today's habit task exists and get latest user info
+      let userInfo;
+      if (user?.id) {
+        userInfo = await getLevelAndExp(user.id); // /me call (creates today's task if missing)
+      }
       const habit = habits.find((h: Habit) => h.id === habitId);
       if (!habit) return;
 
       if (newStatus === 'Completed') {
-        // Find today's habit task for this habit
+        // Find today's habit task for this habit (after /me call)
         const today = new Date().toISOString().split('T')[0];
-        const habitTask = habit.tasks?.find((t: any) => t.date === today);
+        let habitTask = habit.tasks?.find((t: any) => t.date === today);
+        // If not found, try to get from userInfo (in case /me created it)
+        if (!habitTask && userInfo && userInfo.habitTasks) {
+          habitTask = userInfo.habitTasks.find((t: any) => t.habitId === habitId && t.date === today);
+        }
         if (habitTask) {
           await habitsAPI.completeHabitTask(habitTask.id);
         } else {
           // fallback: update habit status if no task found
           await updateHabit(habitId, { status: 'Completed' });
         }
-        // Fetch updated exp/level and trigger profile refresh
+        // Call /me again to refresh user info and exp/level
+        let updatedInfo;
+        if (user?.id) {
+          updatedInfo = await getLevelAndExp(user.id);
+          console.log('🎮 Updated User Level/EXP:', { level: updatedInfo.level, exp: updatedInfo.exp });
+        }
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('refresh-profile-exp'));
-        }
-        if (user?.id) {
-          const expInfo = await getLevelAndExp(user.id);
-          console.log('🎮 Updated User Level/EXP:', expInfo);
         }
       } else {
         // Toggle back to Active
