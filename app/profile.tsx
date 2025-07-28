@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { MdOutlineEdit } from 'react-icons/md';
-import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/hooks/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -453,9 +453,14 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
     end={{ x: 1, y: 0 }}
     style={styles.gradientBackground}
   >
-    <View style={[styles.container, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}> 
+    <ScrollView 
+      style={[styles.scrollContainer, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    > 
       <View style={styles.narrowContainer}>
         <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
+        
         {/* Level/XP display at top, matching Habits page */}
         <View style={styles.levelContainer}>
           <View style={[styles.levelCard, { backgroundColor: colors.background === '#23272A' ? '#393E46' : '#f5f5f5' }]}> 
@@ -484,8 +489,43 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
             )}
           </View>
         </View>
-      </View>
-      <View style={styles.contentContainer}>
+        {!profileLoading && profile && profile.levels && profile.levels.categoryLevels && (
+          <View style={styles.categoryLevelsContainer}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Category Progress</Text>
+            <View style={styles.categoryGrid}>
+              {profile.levels.categoryLevels.map((categoryLevel: any, index: number) => (
+                <View key={categoryLevel.categoryId || index} style={[styles.categoryCard, { backgroundColor: colors.background === '#23272A' ? '#393E46' : '#f5f5f5' }]}>
+                  <Text style={[styles.categoryName, { color: theme === 'dark' ? '#fff' : colors.text }]}>
+                    {categoryLevel.categoryName}
+                  </Text>
+                  <Text style={[styles.categoryLevel, { color: theme === 'dark' ? '#fff' : colors.text }]}>
+                    Level {categoryLevel.level}
+                  </Text>
+                  <Text style={[styles.categoryXp, { color: theme === 'dark' ? '#ccc' : '#666' }]}>
+                    {categoryLevel.experience} XP
+                  </Text>
+                  <View style={[styles.progressBar, { backgroundColor: colors.background === '#23272A' ? '#2C3E50' : '#e0e0e0' }]}>
+                    <View 
+                      style={[
+                        styles.progressFill, 
+                        { 
+                          width: `${Math.min(categoryLevel.progress * 100, 100)}%`,
+                          backgroundColor: '#4A6741'
+                        }
+                      ]} 
+                    />
+                  </View>
+                  <Text style={[styles.nextLevelText, { color: theme === 'dark' ? '#ccc' : '#666' }]}>
+                    {categoryLevel.experienceToNextLevel} XP to next level
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Profile Settings Section */}
+        <View style={styles.profileSettingsContainer}>
           <TouchableOpacity 
             onPress={() => !readOnly && setIsEditingName(!isEditingName)}
             disabled={readOnly}
@@ -571,6 +611,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
           )}
         </View>
       </View>
-    </LinearGradient>
+    </ScrollView>
+  </LinearGradient>
   );
 }

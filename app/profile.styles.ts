@@ -154,6 +154,87 @@ const styles = StyleSheet.create({
     fontSize: 15,
     opacity: 0.8,
   },
+  // Category levels styles
+  categoryLevelsContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#2D4E85',
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  categoryCard: {
+    width: '48%',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  categoryName: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 8,
+    color: '#2D4E85',
+  },
+  categoryLevel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 4,
+    color: '#2D4E85',
+  },
+  categoryXp: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 8,
+    color: '#666',
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 3,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#4A6741',
+    borderRadius: 3,
+  },
+  nextLevelText: {
+    fontSize: 12,
+    textAlign: 'center',
+    color: '#666',
+  },
+  // Scroll container styles
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: 40,
+    paddingBottom: 20,
+  },
+  profileSettingsContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
 });
 
 export default styles;
