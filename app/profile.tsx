@@ -458,26 +458,28 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
         <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
         {/* Level/XP display at top, matching Habits page */}
         <View style={styles.levelContainer}>
-          <View style={styles.levelCard}> 
+          <View style={[styles.levelCard, { backgroundColor: colors.background === '#23272A' ? '#393E46' : '#f5f5f5' }]}> 
             {profileLoading ? (
               <Text style={[styles.loadingText, styles.levelLoadingText]}>Loading your progress...</Text>
             ) : profile && profile.levels && profile.experience ? (
               <>
                 <View style={styles.levelInfoBlock}>
-                  <Text style={[styles.levelText, { color: colors.text, marginBottom: 2 }]}>🏆 Level {profile.levels.totalLevel}</Text>
-                  <Text style={[styles.xpText, { color: colors.text, marginBottom: 2 }]}>{profile.experience.totalExperience} XP</Text>
-                  <Text style={[styles.todayXpText, { color: '#4A6741', marginBottom: 2 }]}>+{profile.experience.todayExperience} XP today</Text>
+                  <Text style={[styles.levelText, { color: theme === 'dark' ? '#fff' : colors.text }]}>🏆 Level {profile.levels.totalLevel}</Text>
+                  <Text style={[styles.xpText, { color: theme === 'dark' ? '#fff' : colors.text }]}>{profile.experience.totalExperience} XP</Text>
+                </View>
+                <View style={styles.levelInfoBlock}>
+                  <Text style={[styles.xpText, { color: theme === 'dark' ? '#fff' : colors.text }]}>Today: <Text style={[styles.todayXpText, { color: '#4A6741' }]}>+{profile.experience.todayExperience} XP</Text></Text>
                 </View>
               </>
             ) : (
               // Fallback: show points/level from userData if available
               userData && userData.level !== undefined && userData.points !== undefined ? (
                 <View style={styles.levelInfoBlock}>
-                  <Text style={[styles.levelText, { color: colors.text, marginBottom: 2 }]}>🏆 Level {userData.level}</Text>
-                  <Text style={[styles.xpText, { color: colors.text, marginBottom: 2 }]}>{userData.points} XP</Text>
+                  <Text style={[styles.levelText, { color: theme === 'dark' ? '#fff' : colors.text }]}>🏆 Level {userData.level}</Text>
+                  <Text style={[styles.xpText, { color: theme === 'dark' ? '#fff' : colors.text }]}>{userData.points} XP</Text>
                 </View>
               ) : (
-                <Text style={[styles.meta, styles.levelSubtitle, { color: colors.text }]}>Level Up Your Life – One Habit at a Time</Text>
+                <Text style={[styles.meta, styles.levelSubtitle, { color: theme === 'dark' ? '#fff' : colors.text }]}>Level Up Your Life – One Habit at a Time</Text>
               )
             )}
           </View>
