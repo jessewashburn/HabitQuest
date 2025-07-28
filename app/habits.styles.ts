@@ -147,6 +147,48 @@ const styles = StyleSheet.create({
   selectedCategoryText: {
     color: 'white',
   },
+  // Level/XP styles
+  levelContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  levelCard: {
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    marginTop: 6,
+    marginBottom: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+    minWidth: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
+  levelLoadingText: {
+    fontSize: 16,
+  },
+  levelInfoBlock: {
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  levelText: {
+    fontWeight: '700',
+    fontSize: 18,
+    letterSpacing: 0.5,
+  },
+  xpText: {
+    fontSize: 15,
+    opacity: 0.85,
+  },
+  todayXpText: {
+    fontWeight: '700',
+  },
+  levelSubtitle: {
+    fontSize: 15,
+    opacity: 0.8,
+  },
 });
 
 export default styles;

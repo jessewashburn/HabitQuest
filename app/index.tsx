@@ -11,6 +11,15 @@ export default function Welcome() {
   const handleGetStarted = () => {
     router.push('./login');
   };
+
+  if (isAuthenticated) {
+    // Show home summary if logged in
+    // Import and render Home page component
+    const Home = require('./home').default;
+    return <Home />;
+  }
+
+  // Show Get Started for unauthenticated users
   return (
     <LinearGradient
       colors={colors.gradient as [string, string]}

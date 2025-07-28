@@ -1,9 +1,12 @@
+
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { useHabits } from '../contexts/HabitsContext';
 import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api';
+import { habitsAPI } from '../services/api/habits';
+import { getUserProfile } from '../services/api/users';
 import styles from './habits.styles';
 
 export default function HabitsPage() {
@@ -18,6 +21,11 @@ export default function HabitsPage() {
     getActiveHabits, 
     getDraftHabits 
   } = useHabits();
+
+  // Profile state for level/exp display
+  const [profile, setProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState<boolean>(true);
+
   // Ensure habits are only for the current user and starter habits are loaded after registration
   useEffect(() => {
     // Load habits for the new user (starter habits seeded by backend)
@@ -26,6 +34,30 @@ export default function HabitsPage() {
     }
     if (user?.id && typeof getDraftHabits === 'function') {
       getDraftHabits();
+    }
+    // Fetch user profile for level/exp display
+    const fetchProfile = async () => {
+      if (user?.id) {
+        setProfileLoading(true);
+        try {
+          const userProfile = await getUserProfile(user.id);
+          setProfile(userProfile);
+        } catch (error) {
+          setProfile(null);
+        } finally {
+          setProfileLoading(false);
+        }
+      } else {
+        setProfile(null);
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+    // Listen for refresh event (e.g., after habit completion)
+    if (typeof window !== 'undefined') {
+      const handler = () => fetchProfile();
+      window.addEventListener('refresh-profile-exp', handler);
+      return () => window.removeEventListener('refresh-profile-exp', handler);
     }
   }, [user?.id]);
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
@@ -205,24 +237,51 @@ export default function HabitsPage() {
     try {
       // Toggle between Active and Completed
       const newStatus = currentStatus === 'Active' ? 'Completed' : 'Active';
-      
-      // Find the habit to get current data
+      let userInfo;
+      if (user?.id) {
+        userInfo = await getUserProfile(user.id);
+      }
       const habit = habits.find((h: Habit) => h.id === habitId);
       if (!habit) return;
-      
-      // Prepare update data
-      const updateData: UpdateHabitData = { status: newStatus };
-      
-      // Both Active and Completed require a start date according to backend validation
-      if (!habit.startDate) {
-        updateData.startDate = new Date().toISOString().split('T')[0];
+
+      if (newStatus === 'Completed') {
+        const today = new Date().toISOString().split('T')[0];
+        let habitTask = null;
+        if (userInfo && userInfo.habits) {
+          const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
+          if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
+            habitTask = userHabit.habitTask;
+          }
+        }
+        if (!habitTask && habit.tasks) {
+          habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
+        }
+        if (habitTask) {
+          await habitsAPI.completeHabitTask(habitTask.id);
+          // Immediately update habit status in frontend so UI reflects completion
+          await updateHabit(habitId, { status: 'Completed' });
+        } else {
+          await updateHabit(habitId, { status: 'Completed' });
+        }
+        // Refresh habits list after completion
+        if (typeof getActiveHabits === 'function') {
+          await getActiveHabits();
+        }
+        if (typeof getDraftHabits === 'function') {
+          await getDraftHabits();
+        }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('refresh-profile-exp'));
+        }
+      } else {
+        await updateHabit(habitId, { status: 'Active' });
+        if (typeof getActiveHabits === 'function') {
+          await getActiveHabits();
+        }
+        if (typeof getDraftHabits === 'function') {
+          await getDraftHabits();
+        }
       }
-      // If the habit already has a start date, include it to maintain consistency
-      else {
-        updateData.startDate = habit.startDate;
-      }
-      
-      await updateHabit(habitId, updateData);
     } catch (error) {
       console.error('Failed to update habit status:', error);
     }
@@ -269,8 +328,26 @@ export default function HabitsPage() {
       >
         <View style={styles.container}> 
           <View style={styles.narrowContainer}>
-            <View style={{ alignItems: 'center', marginBottom: 16 }}>
-              <Text style={[styles.title, { color: colors.text }]}>Your Habits</Text>
+            <View style={styles.levelContainer}>
+              <Text style={[styles.title, { color: colors.text, marginBottom: 2 }]}>Your Habits</Text>
+              {/* Enhanced Level and XP display */}
+              <View style={[styles.levelCard, { backgroundColor: colors.cardBackground || (colors.background === '#23272A' ? '#393E46' : '#f5f5f5'), shadowColor: colors.shadow || '#000' }]}> 
+                {profileLoading ? (
+                  <Text style={[styles.loadingText, styles.levelLoadingText]}>Loading your progress...</Text>
+                ) : profile && profile.levels && profile.experience ? (
+                  <>
+                    <View style={styles.levelInfoBlock}>
+                      <Text style={[styles.levelText, { color: colors.text }]}>🏆 Level {profile.levels.totalLevel}</Text>
+                      <Text style={[styles.xpText, { color: colors.text }]}>{profile.experience.totalExperience} XP</Text>
+                    </View>
+                    <View style={styles.levelInfoBlock}>
+                      <Text style={[styles.xpText, { color: colors.text }]}>Today: <Text style={[styles.todayXpText, { color: colors.success || '#4A6741' }]}>+{profile.experience.todayExperience} XP</Text></Text>
+                    </View>
+                  </>
+                ) : (
+                  <Text style={[styles.meta, styles.levelSubtitle, { color: colors.text }]}>Level Up Your Life – One Habit at a Time</Text>
+                )}
+              </View>
             </View>
             <TouchableOpacity
               style={{

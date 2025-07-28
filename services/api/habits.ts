@@ -6,6 +6,14 @@ const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
 
 export type HabitStatus = 'Active' | 'Draft' | 'Completed' | 'Cancelled' | 'Deleted';
 
+export type HabitTask = {
+  id: string;
+  date: string;
+  status: 'Pending' | 'Completed' | 'Skipped';
+  expAwarded?: number;
+  streak?: number;
+};
+
 export type Habit = {
   id: string;
   name: string;
@@ -18,6 +26,7 @@ export type Habit = {
     username: string;
   };
   category: Category;
+  tasks?: HabitTask[];
 };
 
 export type CreateHabitData = {
@@ -110,4 +119,20 @@ export const habitsAPI = {
       }
     });
   }
+  ,
+  async completeHabitTask(taskId: string): Promise<{ message: string; expAwarded?: number; streak?: number; [key: string]: any }> {
+    const token = getToken();
+    const response = await makeRequest(`/api/habits/task/${taskId}/complete`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    // Extract expAwarded from experienceGained.totalExperience if present
+    let expAwarded;
+    if (response.experienceGained && typeof response.experienceGained.totalExperience === 'number') {
+      expAwarded = response.experienceGained.totalExperience;
+    }
+    return { ...response, expAwarded };
+  },
 };
