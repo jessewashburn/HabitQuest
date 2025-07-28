@@ -22,6 +22,10 @@ export default function HabitsPage() {
     getDraftHabits 
   } = useHabits();
 
+  // Profile state for level/exp display
+  const [profile, setProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState<boolean>(true);
+
   // Ensure habits are only for the current user and starter habits are loaded after registration
   useEffect(() => {
     // Load habits for the new user (starter habits seeded by backend)
@@ -30,6 +34,30 @@ export default function HabitsPage() {
     }
     if (user?.id && typeof getDraftHabits === 'function') {
       getDraftHabits();
+    }
+    // Fetch user profile for level/exp display
+    const fetchProfile = async () => {
+      if (user?.id) {
+        setProfileLoading(true);
+        try {
+          const userProfile = await getUserProfile(user.id);
+          setProfile(userProfile);
+        } catch (error) {
+          setProfile(null);
+        } finally {
+          setProfileLoading(false);
+        }
+      } else {
+        setProfile(null);
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+    // Listen for refresh event (e.g., after habit completion)
+    if (typeof window !== 'undefined') {
+      const handler = () => fetchProfile();
+      window.addEventListener('refresh-profile-exp', handler);
+      return () => window.removeEventListener('refresh-profile-exp', handler);
     }
   }, [user?.id]);
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
@@ -297,19 +325,26 @@ export default function HabitsPage() {
       >
         <View style={styles.container}> 
           <View style={styles.narrowContainer}>
-            <View style={{ alignItems: 'center', marginBottom: 16 }}>
-              <Text style={[styles.title, { color: colors.text }]}>Your Habits</Text>
-              {/* Show Level and XP at the top, matching Home page */}
-              {profileLoading ? (
-                <Text style={styles.loadingText}>Loading your progress...</Text>
-              ) : profile && profile.levels && profile.experience ? (
-                <View style={{ alignItems: 'center', marginTop: 4 }}>
-                  <Text style={[styles.meta, { color: colors.text }]}>Level {profile.levels.totalLevel} • {profile.experience.totalExperience} XP</Text>
-                  <Text style={[styles.meta, { color: colors.text }]}>Today: +{profile.experience.todayExperience} XP</Text>
-                </View>
-              ) : (
-                <Text style={styles.meta}>Level Up Your Life – One Habit at a Time</Text>
-              )}
+            <View style={styles.levelContainer}>
+              <Text style={[styles.title, { color: colors.text, marginBottom: 2 }]}>Your Habits</Text>
+              {/* Enhanced Level and XP display */}
+              <View style={[styles.levelCard, { backgroundColor: colors.cardBackground || (colors.background === '#23272A' ? '#393E46' : '#f5f5f5'), shadowColor: colors.shadow || '#000' }]}> 
+                {profileLoading ? (
+                  <Text style={[styles.loadingText, styles.levelLoadingText]}>Loading your progress...</Text>
+                ) : profile && profile.levels && profile.experience ? (
+                  <>
+                    <View style={styles.levelInfoBlock}>
+                      <Text style={[styles.levelText, { color: colors.text }]}>🏆 Level {profile.levels.totalLevel}</Text>
+                      <Text style={[styles.xpText, { color: colors.text }]}>{profile.experience.totalExperience} XP</Text>
+                    </View>
+                    <View style={styles.levelInfoBlock}>
+                      <Text style={[styles.xpText, { color: colors.text }]}>Today: <Text style={[styles.todayXpText, { color: colors.success || '#4A6741' }]}>+{profile.experience.todayExperience} XP</Text></Text>
+                    </View>
+                  </>
+                ) : (
+                  <Text style={[styles.meta, styles.levelSubtitle, { color: colors.text }]}>Level Up Your Life – One Habit at a Time</Text>
+                )}
+              </View>
             </View>
             <TouchableOpacity
               style={{
