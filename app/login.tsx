@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Alert, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { authAPI } from '../services/api';
-import { getLevelAndExp } from '../services/api/users';
 import styles from './index.styles';
 
 export default function Login() {
@@ -63,27 +62,6 @@ export default function Login() {
       };
       
       login(userData);
-      try {
-            const levelExp = await getLevelAndExp(userData.id);
-            // Defensive: fetch full /me response for extra logging
-            const token = localStorage.getItem('authToken');
-            const fullRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/${userData.id}/me`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'x-api-key': process.env.EXPO_PUBLIC_API_KEY || ''
-              }
-            });
-            const fullData = await fullRes.json();
-            console.log('🎮 User Level/EXP (getLevelAndExp):', levelExp);
-            console.log('🎮 User Level/EXP (raw /me):', {
-              level: fullData.level,
-              exp: fullData.exp,
-              levels: fullData.levels,
-              experience: fullData.experience
-            });
-      } catch (err) {
-        console.error('Failed to fetch user level/exp:', err);
-      }
       router.replace('/home');
       Alert.alert('Success', 'Login successful!');
     } catch (error: any) {

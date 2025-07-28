@@ -99,8 +99,6 @@ export const habitsAPI = {
     });
   },
 
-
-
   async updateHabit(habitId: string, habitData: UpdateHabitData): Promise<{ message: string; habit: Habit }> {
     const token = getToken();
     return await makeRequest(`/api/habits/${habitId}/update`, {

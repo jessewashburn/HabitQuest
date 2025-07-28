@@ -1,53 +1,3 @@
-// Level/XP display styles
-export const levelContainer = {
-  alignItems: 'center' as const,
-  marginBottom: 16,
-};
-
-export const levelCard = {
-  borderRadius: 12,
-  paddingVertical: 10,
-  paddingHorizontal: 24,
-  marginTop: 6,
-  marginBottom: 2,
-  shadowOpacity: 0.08,
-  shadowRadius: 6,
-  elevation: 2,
-  minWidth: 220,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
-  // Stack vertically
-  flexDirection: 'column' as const,
-};
-
-export const levelLoadingText = {
-  fontSize: 16,
-};
-
-export const levelInfoBlock = {
-  alignItems: 'center' as const,
-  marginBottom: 2,
-};
-
-export const levelText = {
-  fontWeight: '700' as const,
-  fontSize: 18,
-  letterSpacing: 0.5,
-};
-
-export const xpText = {
-  fontSize: 15,
-  opacity: 0.85,
-};
-
-export const todayXpText = {
-  fontWeight: '700' as const,
-};
-
-export const levelSubtitle = {
-  fontSize: 15,
-  opacity: 0.8,
-};
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -198,14 +148,47 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   // Level/XP styles
-  levelContainer,
-  levelCard,
-  levelLoadingText,
-  levelInfoBlock,
-  levelText,
-  xpText,
-  todayXpText,
-  levelSubtitle,
+  levelContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  levelCard: {
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    marginTop: 6,
+    marginBottom: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+    minWidth: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
+  levelLoadingText: {
+    fontSize: 16,
+  },
+  levelInfoBlock: {
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  levelText: {
+    fontWeight: '700',
+    fontSize: 18,
+    letterSpacing: 0.5,
+  },
+  xpText: {
+    fontSize: 15,
+    opacity: 0.85,
+  },
+  todayXpText: {
+    fontWeight: '700',
+  },
+  levelSubtitle: {
+    fontSize: 15,
+    opacity: 0.8,
+  },
 });
 
 export default styles;
