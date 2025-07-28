@@ -1,21 +1,18 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  gradientBackground: {
-    flex: 1,
-  },
   container: {
     flex: 1,
     paddingTop: 40,
-  },
-  narrowContainer: {
-    width: '80%',
-    alignSelf: 'center',
   },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  text: {
+    fontSize: 18,
+    color: '#2D4E85',
   },
   title: {
     fontSize: 32,
@@ -25,9 +22,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: '#2D4E85',
   },
-  text: {
+  narrowContainer: {
+    width: '80%',
+    alignSelf: 'center',
+  },
+  levelInfoBlock: {
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  levelText: {
+    fontWeight: '700',
     fontSize: 18,
-    color: '#2D4E85',
+    letterSpacing: 0.5,
+  },
+  gradientBackground: {
+    flex: 1,
   },
   nameText: {
     fontSize: 20,
@@ -96,6 +105,54 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     fontSize: 16,
     backgroundColor: '#fff',
+  },
+  // Experience/level display styles
+  levelContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  levelCard: {
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    marginTop: 6,
+    marginBottom: 2,
+    backgroundColor: '#f2f2f2',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+    minWidth: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+  },
+  xpText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  todayXpText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#4A6741',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  levelLoadingText: {
+    fontSize: 16,
+  },
+  meta: {
+    fontSize: 12,
+    color: '#888',
+  },
+  levelSubtitle: {
+    fontSize: 15,
+    opacity: 0.8,
   },
 });
 

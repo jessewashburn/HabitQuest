@@ -7,6 +7,7 @@ import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-nat
 
 import { useTheme } from '@/hooks/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserProfile } from '../services/api/users';
 import { API_BASE_URL } from './config';
 import styles from './profile.styles';
 
@@ -28,6 +29,38 @@ interface ProfileScreenProps {
 }
 
 export default function ProfileScreen({ user, readOnly = false }: ProfileScreenProps) {
+  const { user: authUser, logout } = useAuth();
+  // Level/exp state for display
+  const [profile, setProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState<boolean>(true);
+  // Remove duplicate, use existing declaration below
+
+  useEffect(() => {
+    // Fetch user profile for level/exp display
+    const fetchProfile = async () => {
+      if (authUser?.id) {
+        setProfileLoading(true);
+        try {
+          const userProfile = await getUserProfile(authUser.id);
+          setProfile(userProfile);
+        } catch (error) {
+          setProfile(null);
+        } finally {
+          setProfileLoading(false);
+        }
+      } else {
+        setProfile(null);
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+    // Listen for refresh event (e.g., after habit completion)
+    if (typeof window !== 'undefined') {
+      const handler = () => fetchProfile();
+      window.addEventListener('refresh-profile-exp', handler);
+      return () => window.removeEventListener('refresh-profile-exp', handler);
+    }
+  }, [authUser?.id]);
   // Feature flags logging
   console.log('[INIT] ProfileScreen component initialized');
   console.log('[CONFIG] Feature flags status:');
@@ -60,7 +93,6 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   // Current working state (for fallback)
   const [userName, setUserName] = useState("Enter a display name");
 
-  const { user: authUser, logout } = useAuth();
   const router = useRouter();
 
   //useEffect for fetching profile
@@ -415,17 +447,43 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   }
 
   return (
-<LinearGradient
-  colors={colors.gradient as [string, string]}  start={{ x: 0, y: 1 }}
-  end={{ x: 1, y: 0 }}
-  style={styles.gradientBackground}
->
-
-        <View style={[styles.container, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}> 
-        <View style={styles.narrowContainer}>
+  <LinearGradient
+    colors={colors.gradient as [string, string]}
+    start={{ x: 0, y: 1 }}
+    end={{ x: 1, y: 0 }}
+    style={styles.gradientBackground}
+  >
+    <View style={[styles.container, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}> 
+      <View style={styles.narrowContainer}>
         <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
+        {/* Level/XP display at top, matching Habits page */}
+        <View style={styles.levelContainer}>
+          <View style={styles.levelCard}> 
+            {profileLoading ? (
+              <Text style={[styles.loadingText, styles.levelLoadingText]}>Loading your progress...</Text>
+            ) : profile && profile.levels && profile.experience ? (
+              <>
+                <View style={styles.levelInfoBlock}>
+                  <Text style={[styles.levelText, { color: colors.text, marginBottom: 2 }]}>🏆 Level {profile.levels.totalLevel}</Text>
+                  <Text style={[styles.xpText, { color: colors.text, marginBottom: 2 }]}>{profile.experience.totalExperience} XP</Text>
+                  <Text style={[styles.todayXpText, { color: '#4A6741', marginBottom: 2 }]}>+{profile.experience.todayExperience} XP today</Text>
+                </View>
+              </>
+            ) : (
+              // Fallback: show points/level from userData if available
+              userData && userData.level !== undefined && userData.points !== undefined ? (
+                <View style={styles.levelInfoBlock}>
+                  <Text style={[styles.levelText, { color: colors.text, marginBottom: 2 }]}>🏆 Level {userData.level}</Text>
+                  <Text style={[styles.xpText, { color: colors.text, marginBottom: 2 }]}>{userData.points} XP</Text>
+                </View>
+              ) : (
+                <Text style={[styles.meta, styles.levelSubtitle, { color: colors.text }]}>Level Up Your Life – One Habit at a Time</Text>
+              )
+            )}
+          </View>
         </View>
-        <View style={styles.contentContainer}>
+      </View>
+      <View style={styles.contentContainer}>
           <TouchableOpacity 
             onPress={() => !readOnly && setIsEditingName(!isEditingName)}
             disabled={readOnly}
@@ -465,9 +523,6 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
               />
             </>
           )}
-          
-          <Text style={[styles.text, { color: colors.text }]}>Points: {userData.points}</Text>
-          <Text style={[styles.text, { color: colors.text }]}>Level: {userData.level}</Text>
           
           <TouchableOpacity onPress={pickImage} disabled={readOnly}>
             <Image
