@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useHabits } from '../contexts/HabitsContext';
 import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api';
 import { habitsAPI } from '../services/api/habits';
-import { getLevelAndExp, getUserProfile } from '../services/api/users';
+import { getUserProfile } from '../services/api/users';
 import styles from './habits.styles';
 
 export default function HabitsPage() {
@@ -237,47 +237,50 @@ export default function HabitsPage() {
     try {
       // Toggle between Active and Completed
       const newStatus = currentStatus === 'Active' ? 'Completed' : 'Active';
-      // Always call /me to ensure today's habit task exists and get latest user info
       let userInfo;
       if (user?.id) {
-        userInfo = await getUserProfile(user.id); // /me call (creates today's task if missing)
+        userInfo = await getUserProfile(user.id);
       }
       const habit = habits.find((h: Habit) => h.id === habitId);
       if (!habit) return;
 
       if (newStatus === 'Completed') {
-        // Find today's habit task for this habit (after /me call)
         const today = new Date().toISOString().split('T')[0];
         let habitTask = null;
-        // Prefer userInfo.habits if available (from /me)
         if (userInfo && userInfo.habits) {
           const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
           if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
             habitTask = userHabit.habitTask;
           }
         }
-        // Fallback to habit.tasks if not found
         if (!habitTask && habit.tasks) {
           habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
         }
         if (habitTask) {
           await habitsAPI.completeHabitTask(habitTask.id);
+          // Immediately update habit status in frontend so UI reflects completion
+          await updateHabit(habitId, { status: 'Completed' });
         } else {
-          // fallback: update habit status if no task found
           await updateHabit(habitId, { status: 'Completed' });
         }
-        // Call /me again to refresh user info and exp/level
-        let updatedInfo;
-        if (user?.id) {
-          updatedInfo = await getLevelAndExp(user.id);
-          console.log('🎮 Updated User Level/EXP:', { level: updatedInfo.level, exp: updatedInfo.exp });
+        // Refresh habits list after completion
+        if (typeof getActiveHabits === 'function') {
+          await getActiveHabits();
+        }
+        if (typeof getDraftHabits === 'function') {
+          await getDraftHabits();
         }
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('refresh-profile-exp'));
         }
       } else {
-        // Toggle back to Active
         await updateHabit(habitId, { status: 'Active' });
+        if (typeof getActiveHabits === 'function') {
+          await getActiveHabits();
+        }
+        if (typeof getDraftHabits === 'function') {
+          await getDraftHabits();
+        }
       }
     } catch (error) {
       console.error('Failed to update habit status:', error);
