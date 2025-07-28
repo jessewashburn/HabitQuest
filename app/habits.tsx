@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useHabits } from '../contexts/HabitsContext';
 import { categoriesAPI, Category, Habit, UpdateHabitData } from '../services/api';
 import { habitsAPI } from '../services/api/habits';
-import { getLevelAndExp } from '../services/api/users';
+import { getLevelAndExp, getUserProfile } from '../services/api/users';
 import styles from './habits.styles';
 
 export default function HabitsPage() {
@@ -212,7 +212,7 @@ export default function HabitsPage() {
       // Always call /me to ensure today's habit task exists and get latest user info
       let userInfo;
       if (user?.id) {
-        userInfo = await getLevelAndExp(user.id); // /me call (creates today's task if missing)
+        userInfo = await getUserProfile(user.id); // /me call (creates today's task if missing)
       }
       const habit = habits.find((h: Habit) => h.id === habitId);
       if (!habit) return;
@@ -220,10 +220,17 @@ export default function HabitsPage() {
       if (newStatus === 'Completed') {
         // Find today's habit task for this habit (after /me call)
         const today = new Date().toISOString().split('T')[0];
-        let habitTask = habit.tasks?.find((t: any) => t.date === today);
-        // If not found, try to get from userInfo (in case /me created it)
-        if (!habitTask && userInfo && userInfo.habitTasks) {
-          habitTask = userInfo.habitTasks.find((t: any) => t.habitId === habitId && t.date === today);
+        let habitTask = null;
+        // Prefer userInfo.habits if available (from /me)
+        if (userInfo && userInfo.habits) {
+          const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
+          if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
+            habitTask = userHabit.habitTask;
+          }
+        }
+        // Fallback to habit.tasks if not found
+        if (!habitTask && habit.tasks) {
+          habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
         }
         if (habitTask) {
           await habitsAPI.completeHabitTask(habitTask.id);
@@ -292,6 +299,17 @@ export default function HabitsPage() {
           <View style={styles.narrowContainer}>
             <View style={{ alignItems: 'center', marginBottom: 16 }}>
               <Text style={[styles.title, { color: colors.text }]}>Your Habits</Text>
+              {/* Show Level and XP at the top, matching Home page */}
+              {profileLoading ? (
+                <Text style={styles.loadingText}>Loading your progress...</Text>
+              ) : profile && profile.levels && profile.experience ? (
+                <View style={{ alignItems: 'center', marginTop: 4 }}>
+                  <Text style={[styles.meta, { color: colors.text }]}>Level {profile.levels.totalLevel} • {profile.experience.totalExperience} XP</Text>
+                  <Text style={[styles.meta, { color: colors.text }]}>Today: +{profile.experience.todayExperience} XP</Text>
+                </View>
+              ) : (
+                <Text style={styles.meta}>Level Up Your Life – One Habit at a Time</Text>
+              )}
             </View>
             <TouchableOpacity
               style={{

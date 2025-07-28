@@ -191,32 +191,111 @@ export const usersAPI = {
   }
 };
 
+// User profile types based on the /me endpoint response
+export type UserProfile = {
+  user: {
+    id: string;
+    email: string;
+    username: string;
+    theme: string;
+  };
+  habits: Array<{
+    habitId: string;
+    habitName: string;
+    habitDetails: {
+      id: string;
+      name: string;
+      createdDate: string;
+      startDate: string;
+      userId: string;
+      categoryId: string;
+      status: string;
+      category: {
+        id: string;
+        name: string;
+        active: boolean;
+      };
+    };
+    message: string;
+    habitTask: {
+      id: string;
+      taskDate: string;
+      isCompleted: boolean;
+      completedAt: string | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+    currentStreak: any;
+    allStreaks: any[];
+    created: boolean;
+  }>;
+  levels: {
+    totalLevel: number;
+    totalExperience: number;
+    categoryLevels: any[];
+  };
+  friends: {
+    friends: any[];
+    pendingRequests: any[];
+    sentRequests: any[];
+  };
+  experience: {
+    totalExperience: number;
+    todayExperience: number;
+    categoryBreakdown: any[];
+  };
+};
+
+// Fetch full user profile from /me endpoint
+export async function getUserProfile(userId?: string): Promise<UserProfile> {
+  const token = tokenUtils.getToken();
+  if (!token) throw new Error('No auth token found');
+  
+  // If no userId provided, try to extract from token
+  let userIdToUse = userId;
+  if (!userIdToUse) {
+    try {
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      userIdToUse = tokenPayload.id;
+    } catch (error) {
+      throw new Error('Could not extract user ID from token');
+    }
+  }
+  
+  if (!userIdToUse) {
+    throw new Error('No user ID available for profile request');
+  }
+  
+  return await makeRequest(`/api/users/${userIdToUse}/me`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}
+
 // For backward compatibility
 export const authAPI = usersAPI;
 
 // Fetch level and exp for a user
-export async function getLevelAndExp(userId: string): Promise<any> {
+export async function getLevelAndExp(userId: string): Promise<{ level: number; exp: number }> {
   const token = tokenUtils.getToken();
   if (!token) throw new Error('No auth token found');
-  // Use /me endpoint for user info and exp/level aggregation
+  // Use main API config and request helper
   const result = await makeRequest(`/api/users/${userId}/me`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
   });
-  // Defensive: add level/exp fields to result for compatibility
+  // Support both { levels, experience } and { level, exp }
   if (result.level !== undefined && result.exp !== undefined) {
-    result.level = result.level;
-    result.exp = result.exp;
-  } else if (result.totalLevel !== undefined && result.totalExperience !== undefined) {
-    result.level = result.totalLevel;
-    result.exp = result.totalExperience;
-  } else if (result.levels && result.levels.totalLevel !== undefined && result.levels.totalExperience !== undefined) {
-    result.level = result.levels.totalLevel;
-    result.exp = result.levels.totalExperience;
-  } else if (result.experience && result.experience.totalLevel !== undefined && result.experience.totalExperience !== undefined) {
-    result.level = result.experience.totalLevel;
-    result.exp = result.experience.totalExperience;
+    return { level: result.level, exp: result.exp };
   }
-  return result;
+  if (result.levels && result.experience) {
+    // friendsAPI.getUserProfile returns levels.totalLevel and experience.totalExperience
+    return {
+      level: result.levels.totalLevel ?? 0,
+      exp: result.experience.totalExperience ?? 0
+    };
+  }
+  throw new Error('Level/exp data not found in backend response');
 }
