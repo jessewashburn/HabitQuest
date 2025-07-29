@@ -25,6 +25,7 @@ export default function HabitsPage() {
   // Profile state for level/exp display
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState<boolean>(true);
+  const [habitStreaks, setHabitStreaks] = useState<Record<string, any>>({});
 
   // Ensure habits are only for the current user and starter habits are loaded after registration
   useEffect(() => {
@@ -35,6 +36,27 @@ export default function HabitsPage() {
     if (user?.id && typeof getDraftHabits === 'function') {
       getDraftHabits();
     }
+
+// Fetch streaks for each habit
+const fetchStreaks = async () => {
+  if (!habits.length) return;
+  const streakMap: Record<string, any> = {};
+
+  for (const habit of habits) {
+    try {
+      const response = await fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/streaks/${habit.id}`);
+      const data = await response.json();
+      streakMap[habit.id] = data;
+    } catch (err) {
+      console.error(`Failed to fetch streak for habit ${habit.id}`, err);
+    }
+  }
+
+  setHabitStreaks(streakMap);
+};
+
+fetchStreaks();
+    
     // Fetch user profile for level/exp display
     const fetchProfile = async () => {
       if (user?.id) {
@@ -452,6 +474,16 @@ export default function HabitsPage() {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          {habitStreaks[habit.id] && (
+                         <>
+                         <Text style={[styles.meta, { color: colors.text }]}>
+                        🔥 Streak: {habitStreaks[habit.id].count} day{habitStreaks[habit.id].count !== 1 ? 's' : ''}
+                        </Text>
+                        <Text style={[styles.meta, { color: colors.text }]}>
+                       🟢 {habitStreaks[habit.id].isActive ? 'Active' : 'Inactive'} (Since: {new Date(habitStreaks[habit.id].startDate).toLocaleDateString()})
+                        </Text>
+                         </>
+                        )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
