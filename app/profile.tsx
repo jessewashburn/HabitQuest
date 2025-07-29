@@ -3,10 +3,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { MdOutlineEdit } from 'react-icons/md';
-import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { useTheme } from '@/hooks/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserProfile } from '../services/api/users';
 import { API_BASE_URL } from './config';
 import styles from './profile.styles';
 
@@ -28,6 +29,38 @@ interface ProfileScreenProps {
 }
 
 export default function ProfileScreen({ user, readOnly = false }: ProfileScreenProps) {
+  const { user: authUser, logout } = useAuth();
+  // Level/exp state for display
+  const [profile, setProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState<boolean>(true);
+  // Remove duplicate, use existing declaration below
+
+  useEffect(() => {
+    // Fetch user profile for level/exp display
+    const fetchProfile = async () => {
+      if (authUser?.id) {
+        setProfileLoading(true);
+        try {
+          const userProfile = await getUserProfile(authUser.id);
+          setProfile(userProfile);
+        } catch (error) {
+          setProfile(null);
+        } finally {
+          setProfileLoading(false);
+        }
+      } else {
+        setProfile(null);
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+    // Listen for refresh event (e.g., after habit completion)
+    if (typeof window !== 'undefined') {
+      const handler = () => fetchProfile();
+      window.addEventListener('refresh-profile-exp', handler);
+      return () => window.removeEventListener('refresh-profile-exp', handler);
+    }
+  }, [authUser?.id]);
   // Feature flags logging
   console.log('[INIT] ProfileScreen component initialized');
   console.log('[CONFIG] Feature flags status:');
@@ -60,7 +93,6 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   // Current working state (for fallback)
   const [userName, setUserName] = useState("Enter a display name");
 
-  const { user: authUser, logout } = useAuth();
   const router = useRouter();
 
   //useEffect for fetching profile
@@ -415,17 +447,85 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
   }
 
   return (
-<LinearGradient
-  colors={colors.gradient as [string, string]}  start={{ x: 0, y: 1 }}
-  end={{ x: 1, y: 0 }}
-  style={styles.gradientBackground}
->
-
-        <View style={[styles.container, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}> 
-        <View style={styles.narrowContainer}>
+  <LinearGradient
+    colors={colors.gradient as [string, string]}
+    start={{ x: 0, y: 1 }}
+    end={{ x: 1, y: 0 }}
+    style={styles.gradientBackground}
+  >
+    <ScrollView 
+      style={[styles.scrollContainer, colors.background !== '#FFFFFF' && { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    > 
+      <View style={styles.narrowContainer}>
         <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
+        
+        {/* Level/XP display at top, matching Habits page */}
+        <View style={styles.levelContainer}>
+          <View style={[styles.levelCard, { backgroundColor: colors.background === '#23272A' ? '#393E46' : '#f5f5f5' }]}> 
+            {profileLoading ? (
+              <Text style={[styles.loadingText, styles.levelLoadingText]}>Loading your progress...</Text>
+            ) : profile && profile.levels && profile.experience ? (
+              <>
+                <View style={styles.levelInfoBlock}>
+                  <Text style={[styles.levelText, { color: theme === 'dark' ? '#fff' : colors.text }]}>🏆 Level {profile.levels.totalLevel}</Text>
+                  <Text style={[styles.xpText, { color: theme === 'dark' ? '#fff' : colors.text }]}>{profile.experience.totalExperience} XP</Text>
+                </View>
+                <View style={styles.levelInfoBlock}>
+                  <Text style={[styles.xpText, { color: theme === 'dark' ? '#fff' : colors.text }]}>Today: <Text style={[styles.todayXpText, { color: '#4A6741' }]}>+{profile.experience.todayExperience} XP</Text></Text>
+                </View>
+              </>
+            ) : (
+              // Fallback: show points/level from userData if available
+              userData && userData.level !== undefined && userData.points !== undefined ? (
+                <View style={styles.levelInfoBlock}>
+                  <Text style={[styles.levelText, { color: theme === 'dark' ? '#fff' : colors.text }]}>🏆 Level {userData.level}</Text>
+                  <Text style={[styles.xpText, { color: theme === 'dark' ? '#fff' : colors.text }]}>{userData.points} XP</Text>
+                </View>
+              ) : (
+                <Text style={[styles.meta, styles.levelSubtitle, { color: theme === 'dark' ? '#fff' : colors.text }]}>Level Up Your Life – One Habit at a Time</Text>
+              )
+            )}
+          </View>
         </View>
-        <View style={styles.contentContainer}>
+        {!profileLoading && profile && profile.levels && profile.levels.categoryLevels && (
+          <View style={styles.categoryLevelsContainer}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Category Progress</Text>
+            <View style={styles.categoryGrid}>
+              {profile.levels.categoryLevels.map((categoryLevel: any, index: number) => (
+                <View key={categoryLevel.categoryId || index} style={[styles.categoryCard, { backgroundColor: colors.background === '#23272A' ? '#393E46' : '#f5f5f5' }]}>
+                  <Text style={[styles.categoryName, { color: theme === 'dark' ? '#fff' : colors.text }]}>
+                    {categoryLevel.categoryName}
+                  </Text>
+                  <Text style={[styles.categoryLevel, { color: theme === 'dark' ? '#fff' : colors.text }]}>
+                    Level {categoryLevel.level}
+                  </Text>
+                  <Text style={[styles.categoryXp, { color: theme === 'dark' ? '#ccc' : '#666' }]}>
+                    {categoryLevel.experience} XP
+                  </Text>
+                  <View style={[styles.progressBar, { backgroundColor: colors.background === '#23272A' ? '#2C3E50' : '#e0e0e0' }]}>
+                    <View 
+                      style={[
+                        styles.progressFill, 
+                        { 
+                          width: `${Math.min(categoryLevel.progress * 100, 100)}%`,
+                          backgroundColor: '#4A6741'
+                        }
+                      ]} 
+                    />
+                  </View>
+                  <Text style={[styles.nextLevelText, { color: theme === 'dark' ? '#ccc' : '#666' }]}>
+                    {categoryLevel.experienceToNextLevel} XP to next level
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Profile Settings Section */}
+        <View style={styles.profileSettingsContainer}>
           <TouchableOpacity 
             onPress={() => !readOnly && setIsEditingName(!isEditingName)}
             disabled={readOnly}
@@ -465,9 +565,6 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
               />
             </>
           )}
-          
-          <Text style={[styles.text, { color: colors.text }]}>Points: {userData.points}</Text>
-          <Text style={[styles.text, { color: colors.text }]}>Level: {userData.level}</Text>
           
           <TouchableOpacity onPress={pickImage} disabled={readOnly}>
             <Image
@@ -514,6 +611,7 @@ export default function ProfileScreen({ user, readOnly = false }: ProfileScreenP
           )}
         </View>
       </View>
-    </LinearGradient>
+    </ScrollView>
+  </LinearGradient>
   );
 }
