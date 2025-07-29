@@ -25,6 +25,7 @@ export default function HabitsPage() {
   // Profile state for level/exp display
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState<boolean>(true);
+  const [habitStreaks, setHabitStreaks] = useState<Record<string, any>>({});
 
   // Ensure habits are only for the current user and starter habits are loaded after registration
   useEffect(() => {
@@ -60,6 +61,28 @@ export default function HabitsPage() {
       return () => window.removeEventListener('refresh-profile-exp', handler);
     }
   }, [user?.id]);
+
+useEffect(() => {
+  const fetchStreaks = async () => {
+    if (!habits.length) return;
+    const streakMap: Record<string, any> = {};
+
+    for (const habit of habits) {
+      try {
+        const response = await fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/streaks/${habit.id}`);
+        const data = await response.json();
+        streakMap[habit.id] = data;
+      } catch (err) {
+        console.error(`Failed to fetch streak for habit ${habit.id}`, err);
+      }
+    }
+
+    setHabitStreaks(streakMap);
+  };
+
+  fetchStreaks();
+}, [habits]);
+  
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
   // Snackbar modal state
   const [snackbar, setSnackbar] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -452,6 +475,9 @@ export default function HabitsPage() {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>
+                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
+                          </Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -494,6 +520,9 @@ export default function HabitsPage() {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>
+                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
+                          </Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -535,6 +564,9 @@ export default function HabitsPage() {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>
+                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
+                          </Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
