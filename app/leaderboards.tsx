@@ -3,7 +3,8 @@ import { categoriesAPI, Category, CategoryLevelLeaderboardEntry, leaderboardsAPI
 import { Picker } from '@react-native-picker/picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import leaderboardStyles from './leaderboard.styles';
 
 type TabType = 'streaks' | 'levels';
 type ViewType = 'global' | 'category';
@@ -92,22 +93,22 @@ export default function LeaderboardsScreen() {
     const isUserStreak = 'totalStreaks' in item;
     
     return (
-      <View key={`streak-${index}`} style={styles.entryCard}>
-        <View style={styles.rankBadge}>
-          <Text style={styles.rankText}>#{item.rank}</Text>
+      <View key={`streak-${index}`} style={leaderboardStyles.entryCard}>
+        <View style={leaderboardStyles.rankBadge}>
+          <Text style={leaderboardStyles.rankText}>#{item.rank}</Text>
         </View>
-        <View style={styles.entryContent}>
-          <Text style={styles.username}>{item.username}</Text>
+        <View style={leaderboardStyles.entryContent}>
+          <Text style={leaderboardStyles.username}>{item.username}</Text>
           {isUserStreak ? (
-            <View style={styles.statsRow}>
-              <Text style={styles.statText}>
+            <View style={leaderboardStyles.statsRow}>
+              <Text style={leaderboardStyles.statText}>
                 Total: {item.totalStreaks} | Active: {item.activeStreaks} | Avg: {item.averageStreak.toFixed(1)}
               </Text>
             </View>
           ) : (
-            <View style={styles.statsRow}>
-              <Text style={styles.habitName}>{item.habitName}</Text>
-              <Text style={styles.statText}>
+            <View style={leaderboardStyles.statsRow}>
+              <Text style={leaderboardStyles.habitName}>{item.habitName}</Text>
+              <Text style={leaderboardStyles.statText}>
                 Streak: {item.streakCount} | {item.isActive ? 'Active' : 'Inactive'}
               </Text>
             </View>
@@ -121,22 +122,22 @@ export default function LeaderboardsScreen() {
     const isUserLevel = 'totalLevel' in item;
     
     return (
-      <View key={`level-${index}`} style={styles.entryCard}>
-        <View style={styles.rankBadge}>
-          <Text style={styles.rankText}>#{item.rank}</Text>
+      <View key={`level-${index}`} style={leaderboardStyles.entryCard}>
+        <View style={leaderboardStyles.rankBadge}>
+          <Text style={leaderboardStyles.rankText}>#{item.rank}</Text>
         </View>
-        <View style={styles.entryContent}>
-          <Text style={styles.username}>{item.username}</Text>
+        <View style={leaderboardStyles.entryContent}>
+          <Text style={leaderboardStyles.username}>{item.username}</Text>
           {isUserLevel ? (
-            <View style={styles.statsRow}>
-              <Text style={styles.statText}>
+            <View style={leaderboardStyles.statsRow}>
+              <Text style={leaderboardStyles.statText}>
                 Level {item.totalLevel} | {item.totalExperience} XP | {item.categoriesCount} categories
               </Text>
             </View>
           ) : (
-            <View style={styles.statsRow}>
-              <Text style={styles.habitName}>{item.categoryName}</Text>
-              <Text style={styles.statText}>
+            <View style={leaderboardStyles.statsRow}>
+              <Text style={leaderboardStyles.habitName}>{item.categoryName}</Text>
+              <Text style={leaderboardStyles.statText}>
                 Level {item.level} | {item.experience} XP
               </Text>
             </View>
@@ -155,9 +156,9 @@ export default function LeaderboardsScreen() {
   };
 
   const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <Text style={[styles.emptyTitle, { color: '#2D4E85' }]}>No Data Available</Text>
-      <Text style={[styles.emptySubtitle, { color: '#555' }]}>
+    <View style={leaderboardStyles.emptyState}>
+      <Text style={[leaderboardStyles.emptyTitle, { color: '#2D4E85' }]}>No Data Available</Text>
+      <Text style={[leaderboardStyles.emptySubtitle, { color: '#555' }]}>
         {viewType === 'global' 
           ? `No ${activeTab} data found for all users.`
           : `No ${activeTab} data found for this category.`
@@ -171,24 +172,22 @@ export default function LeaderboardsScreen() {
       colors={colors.gradient as [string, string]}
       start={{ x: 0, y: 1 }}
       end={{ x: 0, y: 0 }}
-      style={styles.gradientBackground}
+      style={leaderboardStyles.gradientBackground}
     >
-      <View style={styles.container}>
-        <View style={styles.narrowContainer}>
-          <Text style={styles.title}>Leaderboards</Text>
-          
+      <View style={leaderboardStyles.container}>
+        <View style={leaderboardStyles.narrowContainer}>
+          <Text style={leaderboardStyles.title}>Leaderboards</Text>
           {/* Tab Navigation */}
-          <View style={styles.tabContainer}>
+          <View style={leaderboardStyles.tabContainer}>
             <TouchableOpacity
               style={[
-                styles.tab,
-                activeTab === 'streaks' && styles.activeTab,
+                leaderboardStyles.tab,
                 { backgroundColor: activeTab === 'streaks' ? '#2D4E85' : 'transparent' }
               ]}
               onPress={() => setActiveTab('streaks')}
             >
               <Text style={[
-                styles.tabText,
+                leaderboardStyles.tabText,
                 { color: activeTab === 'streaks' ? 'white' : '#2D4E85' }
               ]}>
                 Streaks
@@ -196,31 +195,29 @@ export default function LeaderboardsScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[
-                styles.tab,
-                activeTab === 'levels' && styles.activeTab,
+                leaderboardStyles.tab,
                 { backgroundColor: activeTab === 'levels' ? '#2D4E85' : 'transparent' }
               ]}
               onPress={() => setActiveTab('levels')}
             >
               <Text style={[
-                styles.tabText,
+                leaderboardStyles.tabText,
                 { color: activeTab === 'levels' ? 'white' : '#2D4E85' }
               ]}>
                 Levels
               </Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.toggleContainer}>
+          <View style={leaderboardStyles.toggleContainer}>
             <TouchableOpacity
               style={[
-                styles.toggleButton,
-                viewType === 'global' && styles.activeToggle,
+                leaderboardStyles.toggleButton,
                 { backgroundColor: viewType === 'global' ? '#4A6741' : '#e9ecef' }
               ]}
               onPress={() => setViewType('global')}
             >
               <Text style={[
-                styles.toggleText,
+                leaderboardStyles.toggleText,
                 { color: viewType === 'global' ? 'white' : '#2D4E85' }
               ]}>
                 Global
@@ -228,14 +225,13 @@ export default function LeaderboardsScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[
-                styles.toggleButton,
-                viewType === 'category' && styles.activeToggle,
+                leaderboardStyles.toggleButton,
                 { backgroundColor: viewType === 'category' ? '#4A6741' : '#e9ecef' }
               ]}
               onPress={() => setViewType('category')}
             >
               <Text style={[
-                styles.toggleText,
+                leaderboardStyles.toggleText,
                 { color: viewType === 'category' ? 'white' : '#2D4E85' }
               ]}>
                 By Category
@@ -243,11 +239,11 @@ export default function LeaderboardsScreen() {
             </TouchableOpacity>
           </View>
           {viewType === 'category' && (
-            <View style={styles.pickerContainer}>
+            <View style={leaderboardStyles.pickerContainer}>
               <Picker
                 selectedValue={selectedCategory}
                 onValueChange={(value) => setSelectedCategory(value)}
-                style={styles.picker}
+                style={leaderboardStyles.picker}
               >
                 {categories.map((category) => (
                   <Picker.Item key={category.id} label={category.name} value={category.id} />
@@ -255,16 +251,16 @@ export default function LeaderboardsScreen() {
               </Picker>
             </View>
           )}
-          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView style={leaderboardStyles.scrollContent} showsVerticalScrollIndicator={false}>
             {loading ? (
-              <View style={styles.loadingContainer}>
+              <View style={leaderboardStyles.loadingContainer}>
                 <ActivityIndicator size="large" color="#2D4E85" />
-                <Text style={[styles.loadingText, { color: '#2D4E85' }]}>Loading leaderboard...</Text>
+                <Text style={[leaderboardStyles.loadingText, { color: '#2D4E85' }]}>Loading leaderboard...</Text>
               </View>
             ) : !Array.isArray(leaderboardData) || leaderboardData.length === 0 ? (
               renderEmptyState()
             ) : (
-              <View style={styles.listContainer}>
+              <View style={leaderboardStyles.listContainer}>
                 {leaderboardData.map((item, index) => renderEntry({ item, index }))}
               </View>
             )}
@@ -274,146 +270,3 @@ export default function LeaderboardsScreen() {
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  gradientBackground: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    paddingTop: 40,
-  },
-  narrowContainer: {
-    width: '80%',
-    alignSelf: 'center',
-    flex: 1,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-    marginTop: 8,
-    color: '#2D4E85',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#f2f2f2',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  toggleText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  pickerContainer: {
-    marginBottom: 16,
-    borderRadius: 8,
-    backgroundColor: '#f2f2f2',
-    overflow: 'hidden',
-  },
-  picker: {
-    height: 50,
-    color: '#2D4E85',
-  },
-  scrollContent: {
-    marginTop: 16,
-    flexGrow: 1,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    marginTop: 50,
-  },
-  loadingText: {
-    fontSize: 18,
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  entryCard: {
-    flexDirection: 'row',
-    padding: 15,
-    borderRadius: 12,
-    backgroundColor: '#f2f2f2',
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  rankBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-    backgroundColor: '#2D4E85',
-  },
-  rankText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  entryContent: {
-    flex: 1,
-  },
-  username: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
-    color: '#2D4E85',
-  },
-  statsRow: {
-    flexDirection: 'column',
-  },
-  habitName: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 2,
-    color: '#2D4E85',
-  },
-  statText: {
-    fontSize: 12,
-    color: '#555',
-  },
-  emptyState: {
-    alignItems: 'center',
-    marginTop: 50,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
-});
