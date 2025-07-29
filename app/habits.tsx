@@ -81,7 +81,7 @@ useEffect(() => {
   };
 
   fetchStreaks();
-}, [habits]);
+}, []);
   
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
   // Snackbar modal state
@@ -268,48 +268,65 @@ useEffect(() => {
       if (!habit) return;
 
       if (newStatus === 'Completed') {
-        const today = new Date().toISOString().split('T')[0];
-        let habitTask = null;
-        if (userInfo && userInfo.habits) {
-          const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
-          if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
-            habitTask = userHabit.habitTask;
-          }
-        }
-        if (!habitTask && habit.tasks) {
-          habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
-        }
-        if (habitTask) {
-          await habitsAPI.completeHabitTask(habitTask.id);
-          // Immediately update habit status in frontend so UI reflects completion
-          await updateHabit(habitId, { status: 'Completed' });
-        } else {
-          await updateHabit(habitId, { status: 'Completed' });
-        }
-        // Refresh habits list after completion
-        if (typeof getActiveHabits === 'function') {
-          await getActiveHabits();
-        }
-        if (typeof getDraftHabits === 'function') {
-          await getDraftHabits();
-        }
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new Event('refresh-profile-exp'));
-        }
-      } else {
-        await updateHabit(habitId, { status: 'Active' });
-        if (typeof getActiveHabits === 'function') {
-          await getActiveHabits();
-        }
-        if (typeof getDraftHabits === 'function') {
-          await getDraftHabits();
-        }
-      }
-    } catch (error) {
-      console.error('Failed to update habit status:', error);
+  const today = new Date().toISOString().split('T')[0];
+  let habitTask = null;
+  if (userInfo && userInfo.habits) {
+    const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
+    if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
+      habitTask = userHabit.habitTask;
     }
-  };
+  }
+  if (!habitTask && habit.tasks) {
+    habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
+  }
 
+  if (habitTask) {
+    await habitsAPI.completeHabitTask(habitTask.id);
+  }
+
+  await updateHabit(habitId, { status: 'Completed' });
+
+  setHabitStreaks((prev) => {
+  const current = prev[habitId] ?? { count: 0, isActive: true };
+  const newCount = current.isActive ? current.count + 1 : 1;
+
+  // Send to backend to persist
+  fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/streaks/${habitId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      count: newCount,
+      isActive: true,
+    }),
+  }).catch((err) => console.error('Failed to persist streak', err));
+
+  return {
+    ...prev,
+    [habitId]: {
+      count: newCount,
+      isActive: true,
+    },
+  };
+});
+
+  if (typeof getActiveHabits === 'function') {
+    await getActiveHabits();
+  }
+  if (typeof getDraftHabits === 'function') {
+    await getDraftHabits();
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('refresh-profile-exp'));
+  }
+} else {
+  await updateHabit(habitId, { status: 'Active' });
+  if (typeof getActiveHabits === 'function') {
+    await getActiveHabits();
+  }
+  if (typeof getDraftHabits === 'function') {
+    await getDraftHabits();
+  }
+}
   if (loading) {
     return (
       <LinearGradient
