@@ -51,7 +51,7 @@ export const HabitsProvider: React.FC<HabitsProviderProps> = ({ children }) => {
           status: details.status,
           user: { id: details.userId, email: '', username: '' },
           category: details.category,
-          tasks: [], // Optionally map tasks if needed
+          tasks: [],
           streak: h.currentStreak && typeof h.currentStreak.count === 'number' ? h.currentStreak.count : 0,
         };
       });
