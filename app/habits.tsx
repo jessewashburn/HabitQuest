@@ -451,7 +451,7 @@ export default function HabitsPage() {
                             {habit.category && habit.category.name ? habit.category.name : 'No category'}
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
-                          <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>🔥 Streak: {habit.streak || 0} days</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -493,7 +493,11 @@ export default function HabitsPage() {
                             {habit.category && habit.category.name ? habit.category.name : 'No category'}
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
-                          <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          {habit.status === 'Completed' ? (
+                            <Text style={[styles.meta, { color: colors.text }]}>🔥 Streak: {habit.streak || 0} days</Text>
+                          ) : (
+                            <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -534,7 +538,11 @@ export default function HabitsPage() {
                             {habit.category && habit.category.name ? habit.category.name : 'No category'}
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
-                          <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          {habit.status === 'Completed' ? (
+                            <Text style={[styles.meta, { color: colors.text }]}>� Streak: {habit.streak || 0} days</Text>
+                          ) : (
+                            <Text style={[styles.meta, { color: colors.text }]}>�📊 Status: {habit.status}</Text>
+                          )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 

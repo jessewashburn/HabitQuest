@@ -27,6 +27,7 @@ export type Habit = {
   };
   category: Category;
   tasks?: HabitTask[];
+  streak?: number;
 };
 
 export type CreateHabitData = {
