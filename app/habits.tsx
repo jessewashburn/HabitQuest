@@ -64,24 +64,30 @@ export default function HabitsPage() {
 
 useEffect(() => {
   const fetchStreaks = async () => {
-    if (!habits.length) return;
-    const streakMap: Record<string, any> = {};
+    if (!user?.id) return;
 
-    for (const habit of habits) {
-      try {
-        const response = await fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/streaks/${habit.id}`);
-        const data = await response.json();
-        streakMap[habit.id] = data;
-      } catch (err) {
-        console.error(`Failed to fetch streak for habit ${habit.id}`, err);
+    try {
+      const response = await fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/api/users/me`);
+      const data = await response.json();
+
+      const updatedMap: Record<string, { count: number; isActive: boolean }> = {};
+      for (const habit of data.habits || []) {
+        if (habit.currentStreak) {
+          updatedMap[habit.habitId] = {
+            count: habit.currentStreak.count,
+            isActive: habit.currentStreak.isActive
+          };
+        }
       }
-    }
 
-    setHabitStreaks(streakMap);
+      setHabitStreaks(updatedMap);
+    } catch (err) {
+      console.error('Failed to fetch streaks from /me route', err);
+    }
   };
 
   fetchStreaks();
-}, []);
+}, [user?.id]);
   
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
   // Snackbar modal state
@@ -290,8 +296,8 @@ useEffect(() => {
   const current = prev[habitId] ?? { count: 0, isActive: true };
   const newCount = current.isActive ? current.count + 1 : 1;
 
-  // Send to backend to persist
-  fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/streaks/${habitId}`, {
+   // Send to backend to persist
+  fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/currentStreak/${habitId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -314,7 +320,7 @@ useEffect(() => {
   }
   if (typeof getDraftHabits === 'function') {
     await getDraftHabits();
-  }
+}
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('refresh-profile-exp'));
   }
@@ -326,7 +332,12 @@ useEffect(() => {
   if (typeof getDraftHabits === 'function') {
     await getDraftHabits();
   }
-}
+    }
+  } catch (err) {
+    console.error('Error toggling habit status:', err);
+    setSnackbar({ type: 'error', message: 'Failed to toggle habit status' });
+  }
+};
   if (loading) {
     return (
       <LinearGradient
