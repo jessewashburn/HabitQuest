@@ -25,6 +25,7 @@ export default function HabitsPage() {
   // Profile state for level/exp display
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState<boolean>(true);
+  const [habitStreaks, setHabitStreaks] = useState<Record<string, any>>({});
 
   // Ensure habits are only for the current user and starter habits are loaded after registration
   useEffect(() => {
@@ -60,6 +61,28 @@ export default function HabitsPage() {
       return () => window.removeEventListener('refresh-profile-exp', handler);
     }
   }, [user?.id]);
+
+useEffect(() => {
+  const fetchStreaks = async () => {
+    if (!habits.length) return;
+    const streakMap: Record<string, any> = {};
+
+    for (const habit of habits) {
+      try {
+        const response = await fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/streaks/${habit.id}`);
+        const data = await response.json();
+        streakMap[habit.id] = data;
+      } catch (err) {
+        console.error(`Failed to fetch streak for habit ${habit.id}`, err);
+      }
+    }
+
+    setHabitStreaks(streakMap);
+  };
+
+  fetchStreaks();
+}, []);
+  
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
   // Snackbar modal state
   const [snackbar, setSnackbar] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -245,48 +268,70 @@ export default function HabitsPage() {
       if (!habit) return;
 
       if (newStatus === 'Completed') {
-        const today = new Date().toISOString().split('T')[0];
-        let habitTask = null;
-        if (userInfo && userInfo.habits) {
-          const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
-          if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
-            habitTask = userHabit.habitTask;
-          }
-        }
-        if (!habitTask && habit.tasks) {
-          habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
-        }
-        if (habitTask) {
-          await habitsAPI.completeHabitTask(habitTask.id);
-          // Immediately update habit status in frontend so UI reflects completion
-          await updateHabit(habitId, { status: 'Completed' });
-        } else {
-          await updateHabit(habitId, { status: 'Completed' });
-        }
-        // Refresh habits list after completion
-        if (typeof getActiveHabits === 'function') {
-          await getActiveHabits();
-        }
-        if (typeof getDraftHabits === 'function') {
-          await getDraftHabits();
-        }
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new Event('refresh-profile-exp'));
-        }
-      } else {
-        await updateHabit(habitId, { status: 'Active' });
-        if (typeof getActiveHabits === 'function') {
-          await getActiveHabits();
-        }
-        if (typeof getDraftHabits === 'function') {
-          await getDraftHabits();
-        }
-      }
-    } catch (error) {
-      console.error('Failed to update habit status:', error);
+  const today = new Date().toISOString().split('T')[0];
+  let habitTask = null;
+  if (userInfo && userInfo.habits) {
+    const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
+    if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
+      habitTask = userHabit.habitTask;
     }
-  };
+  }
+  if (!habitTask && habit.tasks) {
+    habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
+  }
 
+  if (habitTask) {
+    await habitsAPI.completeHabitTask(habitTask.id);
+  }
+
+  await updateHabit(habitId, { status: 'Completed' });
+
+  setHabitStreaks((prev) => {
+  const current = prev[habitId] ?? { count: 0, isActive: true };
+  const newCount = current.isActive ? current.count + 1 : 1;
+
+  // Send to backend to persist
+  fetch(`https://o7u7q12uy2.execute-api.us-east-1.amazonaws.com/dev/streaks/${habitId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      count: newCount,
+      isActive: true,
+    }),
+  }).catch((err) => console.error('Failed to persist streak', err));
+
+  return {
+    ...prev,
+    [habitId]: {
+      count: newCount,
+      isActive: true,
+    },
+  };
+});
+
+  if (typeof getActiveHabits === 'function') {
+    await getActiveHabits();
+  }
+  if (typeof getDraftHabits === 'function') {
+    await getDraftHabits();
+}
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('refresh-profile-exp'));
+  }
+} else {
+  await updateHabit(habitId, { status: 'Active' });
+  if (typeof getActiveHabits === 'function') {
+    await getActiveHabits();
+  }
+  if (typeof getDraftHabits === 'function') {
+    await getDraftHabits();
+  }
+    }
+  } catch (err) {
+    console.error('Error toggling habit status:', err);
+    setSnackbar({ type: 'error', message: 'Failed to toggle habit status' });
+  }
+};
   if (loading) {
     return (
       <LinearGradient
@@ -452,6 +497,9 @@ export default function HabitsPage() {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>
+                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
+                          </Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -494,6 +542,9 @@ export default function HabitsPage() {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>
+                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
+                          </Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -535,6 +586,9 @@ export default function HabitsPage() {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>
+                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
+                          </Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -689,4 +743,4 @@ export default function HabitsPage() {
         </LinearGradient>
       </Modal>
     </>
-  )};
+  )}
