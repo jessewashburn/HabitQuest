@@ -25,7 +25,6 @@ export default function HabitsPage() {
   // Profile state for level/exp display
   const [profile, setProfile] = useState<any>(null);
   const [profileLoading, setProfileLoading] = useState<boolean>(true);
-  const [habitStreaks, setHabitStreaks] = useState<Record<string, any>>({});
 
   // Ensure habits are only for the current user and starter habits are loaded after registration
   useEffect(() => {
@@ -61,6 +60,7 @@ export default function HabitsPage() {
       return () => window.removeEventListener('refresh-profile-exp', handler);
     }
   }, [user?.id]);
+<<<<<<< HEAD
 
 useEffect(() => {
   const fetchStreaks = async () => {
@@ -89,6 +89,8 @@ useEffect(() => {
   fetchStreaks();
 }, [user?.id]);
   
+=======
+>>>>>>> df22556 (working streaks)
   const { theme, colors } = require('@/hooks/ThemeContext').useTheme();
   // Snackbar modal state
   const [snackbar, setSnackbar] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -274,13 +276,47 @@ useEffect(() => {
       if (!habit) return;
 
       if (newStatus === 'Completed') {
-  const today = new Date().toISOString().split('T')[0];
-  let habitTask = null;
-  if (userInfo && userInfo.habits) {
-    const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
-    if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
-      habitTask = userHabit.habitTask;
+        const today = new Date().toISOString().split('T')[0];
+        let habitTask = null;
+        if (userInfo && userInfo.habits) {
+          const userHabit = userInfo.habits.find((h: any) => h.habitId === habitId);
+          if (userHabit && userHabit.habitTask && userHabit.habitTask.taskDate === today && !userHabit.habitTask.isCompleted) {
+            habitTask = userHabit.habitTask;
+          }
+        }
+        if (!habitTask && habit.tasks) {
+          habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
+        }
+        if (habitTask) {
+          await habitsAPI.completeHabitTask(habitTask.id);
+          // Immediately update habit status in frontend so UI reflects completion
+          await updateHabit(habitId, { status: 'Completed' });
+        } else {
+          await updateHabit(habitId, { status: 'Completed' });
+        }
+        // Refresh habits list after completion
+        if (typeof getActiveHabits === 'function') {
+          await getActiveHabits();
+        }
+        if (typeof getDraftHabits === 'function') {
+          await getDraftHabits();
+        }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('refresh-profile-exp'));
+        }
+      } else {
+        await updateHabit(habitId, { status: 'Active' });
+        if (typeof getActiveHabits === 'function') {
+          await getActiveHabits();
+        }
+        if (typeof getDraftHabits === 'function') {
+          await getDraftHabits();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update habit status:', error);
     }
+<<<<<<< HEAD
   }
   if (!habitTask && habit.tasks) {
     habitTask = habit.tasks.find((t: any) => t.date === today && t.status !== 'Completed');
@@ -312,9 +348,11 @@ useEffect(() => {
       count: newCount,
       isActive: true,
     },
+=======
+>>>>>>> df22556 (working streaks)
   };
-});
 
+<<<<<<< HEAD
   if (typeof getActiveHabits === 'function') {
     await getActiveHabits();
   }
@@ -338,6 +376,8 @@ useEffect(() => {
     setSnackbar({ type: 'error', message: 'Failed to toggle habit status' });
   }
 };
+=======
+>>>>>>> df22556 (working streaks)
   if (loading) {
     return (
       <LinearGradient
@@ -503,9 +543,7 @@ useEffect(() => {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
-                          <Text style={[styles.meta, { color: colors.text }]}>
-                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
-                          </Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>🔥 Streak: {habit.streak || 0} days</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -548,9 +586,7 @@ useEffect(() => {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
-                          <Text style={[styles.meta, { color: colors.text }]}>
-                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
-                          </Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>🔥 Streak: {habit.streak || 0} days</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 
@@ -592,9 +628,7 @@ useEffect(() => {
                           </Text>
                           <Text style={[styles.meta, { color: colors.text }]}>🚀 Started: {new Date(habit.createdDate).toLocaleDateString()}</Text>
                           <Text style={[styles.meta, { color: colors.text }]}>📊 Status: {habit.status}</Text>
-                          <Text style={[styles.meta, { color: colors.text }]}>
-                           🔥 Streak: {habitStreaks[habit.id]?.count ?? 0} days {habitStreaks[habit.id]?.isActive ? '🟢' : '🔴'}
-                          </Text>
+                          <Text style={[styles.meta, { color: colors.text }]}>🔥 Streak: {habit.streak || 0} days</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <TouchableOpacity 

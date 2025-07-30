@@ -1,5 +1,6 @@
 import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { CreateHabitData, Habit, HabitStatus, UpdateHabitData, habitsAPI } from '../services/api';
+import { getUserProfile } from '../services/api/users';
 import { useAuth } from './AuthContext';
 
 interface HabitsContextType {
@@ -37,7 +38,23 @@ export const HabitsProvider: React.FC<HabitsProviderProps> = ({ children }) => {
         setError('No user logged in');
         return;
       }
-      const fetchedHabits = await habitsAPI.getHabitsByUser(user.id);
+      // Use /me endpoint to get habits with streaks
+      const profile = await getUserProfile(user.id);
+      // Map backend habits to Habit[]
+      const fetchedHabits: Habit[] = (profile.habits || []).map((h: any) => {
+        const details = h.habitDetails || {};
+        return {
+          id: details.id,
+          name: details.name,
+          createdDate: details.createdDate,
+          startDate: details.startDate,
+          status: details.status,
+          user: { id: details.userId, email: '', username: '' },
+          category: details.category,
+          tasks: [], // Optionally map tasks if needed
+          streak: h.currentStreak && typeof h.currentStreak.count === 'number' ? h.currentStreak.count : 0,
+        };
+      });
       setHabits(fetchedHabits);
     } catch (err) {
       console.error('Failed to load habits:', err);
@@ -71,8 +88,24 @@ export const HabitsProvider: React.FC<HabitsProviderProps> = ({ children }) => {
       await habitsAPI.updateHabit(id, updates);
       // Refetch all habits to ensure category is populated
       if (user?.id) {
-        const fetchedHabits = await habitsAPI.getHabitsByUser(user.id);
-        setHabits(fetchedHabits);
+      // Use /me endpoint to get habits with streaks
+      const profile = await getUserProfile(user.id);
+      // Map backend habits to Habit[]
+      const fetchedHabits: Habit[] = (profile.habits || []).map((h: any) => {
+        const details = h.habitDetails || {};
+        return {
+          id: details.id,
+          name: details.name,
+          createdDate: details.createdDate,
+          startDate: details.startDate,
+          status: details.status,
+          user: { id: details.userId, email: '', username: '' },
+          category: details.category,
+          tasks: [],
+          streak: h.currentStreak && typeof h.currentStreak.count === 'number' ? h.currentStreak.count : 0,
+        };
+      });
+      setHabits(fetchedHabits);
       }
     } catch (err) {
       console.error('Failed to update habit:', err);
